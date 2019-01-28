@@ -1,0 +1,695 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		DD27A47821FF43490012028E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDAB7496215D88450062F8B6 /* Assets.xcassets */; };
+		DDAB746F215D88050062F8B6 /* ResourcePath.mm in Sources */ = {isa = PBXBuildFile; fileRef = DDAB746E215D88050062F8B6 /* ResourcePath.mm */; };
+		DDAB7472215D88050062F8B6 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DDAB7471215D88050062F8B6 /* main.cpp */; };
+		DDAB7497215D88450062F8B6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDAB7496215D88450062F8B6 /* Assets.xcassets */; };
+		DDAB74A1215D89CD0062F8B6 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DDAB7471215D88050062F8B6 /* main.cpp */; };
+		DDAB74A9215D89DC0062F8B6 /* libsfml-system-s-d.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DDAB74A3215D89DC0062F8B6 /* libsfml-system-s-d.a */; };
+		DDAB74AA215D89DC0062F8B6 /* libsfml-window-s-d.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DDAB74A4215D89DC0062F8B6 /* libsfml-window-s-d.a */; };
+		DDAB74AB215D89DC0062F8B6 /* libsfml-graphics-s-d.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DDAB74A5215D89DC0062F8B6 /* libsfml-graphics-s-d.a */; };
+		DDAB74AC215D89DC0062F8B6 /* libsfml-network-s-d.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DDAB74A6215D89DC0062F8B6 /* libsfml-network-s-d.a */; };
+		DDAB74AD215D89DC0062F8B6 /* libsfml-audio-s-d.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DDAB74A7215D89DC0062F8B6 /* libsfml-audio-s-d.a */; };
+		DDAB74AE215D89DC0062F8B6 /* libsfml-main-d.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DDAB74A8215D89DC0062F8B6 /* libsfml-main-d.a */; };
+		DDAB74B3215D8A110062F8B6 /* libvorbis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DDAB74AF215D8A110062F8B6 /* libvorbis.a */; };
+		DDAB74B4215D8A110062F8B6 /* libogg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DDAB74B0215D8A110062F8B6 /* libogg.a */; };
+		DDAB74B6215D8A110062F8B6 /* libflac.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DDAB74B2215D8A110062F8B6 /* libflac.a */; };
+		DDAB74B8215D8A1E0062F8B6 /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DDAB74B7215D8A1E0062F8B6 /* CoreMotion.framework */; };
+		DDAB74BA215D8A250062F8B6 /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DDAB74B9215D8A250062F8B6 /* OpenAL.framework */; };
+		DDAB74BC215D8A2B0062F8B6 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DDAB74BB215D8A2B0062F8B6 /* Foundation.framework */; };
+		DDAB74BE215D8A310062F8B6 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DDAB74BD215D8A310062F8B6 /* QuartzCore.framework */; };
+		DDAB74C0215D8A370062F8B6 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DDAB74BF215D8A370062F8B6 /* OpenGLES.framework */; };
+		DDAB74C2215D8A3E0062F8B6 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DDAB74C1215D8A3E0062F8B6 /* UIKit.framework */; };
+		DDAB74C4215D8A4C0062F8B6 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = DDAB74C3215D8A4C0062F8B6 /* libz.tbd */; };
+		DDAB74C6215D8A5A0062F8B6 /* libbz2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = DDAB74C5215D8A5A0062F8B6 /* libbz2.tbd */; };
+		DDAB74D7215D8EA80062F8B6 /* libfreetype.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DDAB74D6215D8EA80062F8B6 /* libfreetype.a */; };
+		DDE66FB121FB1BC80071145D /* Base.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DDE66FAF21FB1BC80071145D /* Base.cpp */; };
+		DDE66FB221FB1BC80071145D /* Base.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DDE66FAF21FB1BC80071145D /* Base.cpp */; };
+		DDE66FB521FB1C870071145D /* EntitySystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DDE66FB321FB1C870071145D /* EntitySystem.cpp */; };
+		DDE66FB621FB1C870071145D /* EntitySystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DDE66FB321FB1C870071145D /* EntitySystem.cpp */; };
+		DDE66FB921FB1CC90071145D /* StaticMethods.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DDE66FB721FB1CC90071145D /* StaticMethods.cpp */; };
+		DDE66FBA21FB1CC90071145D /* StaticMethods.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DDE66FB721FB1CC90071145D /* StaticMethods.cpp */; };
+		DDE66FBD21FB492C0071145D /* GUIInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DDE66FBB21FB492C0071145D /* GUIInterface.cpp */; };
+		DDE66FBE21FB492C0071145D /* GUIInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DDE66FBB21FB492C0071145D /* GUIInterface.cpp */; };
+		DDE66FC121FB495B0071145D /* EssentialComponents.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DDE66FBF21FB495B0071145D /* EssentialComponents.cpp */; };
+		DDE66FC221FB495B0071145D /* EssentialComponents.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DDE66FBF21FB495B0071145D /* EssentialComponents.cpp */; };
+		DDE66FCA21FB4FFA0071145D /* Data in Resources */ = {isa = PBXBuildFile; fileRef = DDE66FC921FB4FFA0071145D /* Data */; };
+		DDE66FCB21FB4FFA0071145D /* Data in Resources */ = {isa = PBXBuildFile; fileRef = DDE66FC921FB4FFA0071145D /* Data */; };
+		DDE66FCE21FB62B20071145D /* NekoNinja.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DDE66FCC21FB62B20071145D /* NekoNinja.cpp */; };
+		DDE66FCF21FB62B20071145D /* NekoNinja.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DDE66FCC21FB62B20071145D /* NekoNinja.cpp */; };
+		DDF4EFC221FD24F90065A6AF /* ResourcePath.mm in Sources */ = {isa = PBXBuildFile; fileRef = DDAB746E215D88050062F8B6 /* ResourcePath.mm */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		DDAB7469215D88050062F8B6 /* NekoPlace.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NekoPlace.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DDAB746D215D88050062F8B6 /* NekoPlace-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "NekoPlace-Info.plist"; sourceTree = "<group>"; };
+		DDAB746E215D88050062F8B6 /* ResourcePath.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ResourcePath.mm; sourceTree = "<group>"; };
+		DDAB7470215D88050062F8B6 /* ResourcePath.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ResourcePath.hpp; sourceTree = "<group>"; };
+		DDAB7471215D88050062F8B6 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		DDAB7485215D88430062F8B6 /* iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DDAB7496215D88450062F8B6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		DDAB749B215D88450062F8B6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		DDAB74A3215D89DC0062F8B6 /* libsfml-system-s-d.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libsfml-system-s-d.a"; path = "../../../../Documents/Libraries/SFML/build/ios/lib/Debug/libsfml-system-s-d.a"; sourceTree = "<group>"; };
+		DDAB74A4215D89DC0062F8B6 /* libsfml-window-s-d.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libsfml-window-s-d.a"; path = "../../../../Documents/Libraries/SFML/build/ios/lib/Debug/libsfml-window-s-d.a"; sourceTree = "<group>"; };
+		DDAB74A5215D89DC0062F8B6 /* libsfml-graphics-s-d.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libsfml-graphics-s-d.a"; path = "../../../../Documents/Libraries/SFML/build/ios/lib/Debug/libsfml-graphics-s-d.a"; sourceTree = "<group>"; };
+		DDAB74A6215D89DC0062F8B6 /* libsfml-network-s-d.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libsfml-network-s-d.a"; path = "../../../../Documents/Libraries/SFML/build/ios/lib/Debug/libsfml-network-s-d.a"; sourceTree = "<group>"; };
+		DDAB74A7215D89DC0062F8B6 /* libsfml-audio-s-d.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libsfml-audio-s-d.a"; path = "../../../../Documents/Libraries/SFML/build/ios/lib/Debug/libsfml-audio-s-d.a"; sourceTree = "<group>"; };
+		DDAB74A8215D89DC0062F8B6 /* libsfml-main-d.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libsfml-main-d.a"; path = "../../../../Documents/Libraries/SFML/build/ios/lib/Debug/libsfml-main-d.a"; sourceTree = "<group>"; };
+		DDAB74AF215D8A110062F8B6 /* libvorbis.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libvorbis.a; path = "../../../../Documents/Libraries/SFML/extlibs/libs-ios/libvorbis.a"; sourceTree = "<group>"; };
+		DDAB74B0215D8A110062F8B6 /* libogg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libogg.a; path = "../../../../Documents/Libraries/SFML/extlibs/libs-ios/libogg.a"; sourceTree = "<group>"; };
+		DDAB74B1215D8A110062F8B6 /* libfreetype.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfreetype.a; path = "../../../../Documents/Libraries/SFML/extlibs/libs-ios/libfreetype.a"; sourceTree = "<group>"; };
+		DDAB74B2215D8A110062F8B6 /* libflac.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libflac.a; path = "../../../../Documents/Libraries/SFML/extlibs/libs-ios/libflac.a"; sourceTree = "<group>"; };
+		DDAB74B7215D8A1E0062F8B6 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.0.sdk/System/Library/Frameworks/CoreMotion.framework; sourceTree = DEVELOPER_DIR; };
+		DDAB74B9215D8A250062F8B6 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.0.sdk/System/Library/Frameworks/OpenAL.framework; sourceTree = DEVELOPER_DIR; };
+		DDAB74BB215D8A2B0062F8B6 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		DDAB74BD215D8A310062F8B6 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.0.sdk/System/Library/Frameworks/QuartzCore.framework; sourceTree = DEVELOPER_DIR; };
+		DDAB74BF215D8A370062F8B6 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.0.sdk/System/Library/Frameworks/OpenGLES.framework; sourceTree = DEVELOPER_DIR; };
+		DDAB74C1215D8A3E0062F8B6 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.0.sdk/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
+		DDAB74C3215D8A4C0062F8B6 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.0.sdk/usr/lib/libz.tbd; sourceTree = DEVELOPER_DIR; };
+		DDAB74C5215D8A5A0062F8B6 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.0.sdk/usr/lib/libbz2.tbd; sourceTree = DEVELOPER_DIR; };
+		DDAB74D4215D8D370062F8B6 /* libiconv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libiconv.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.0.sdk/usr/lib/libiconv.tbd; sourceTree = DEVELOPER_DIR; };
+		DDAB74D6215D8EA80062F8B6 /* libfreetype.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfreetype.a; path = "../../../../Downloads/libfreetype6-dev_2.6.3-3.2_arm64/usr/lib/aarch64-linux-gnu/libfreetype.a"; sourceTree = "<group>"; };
+		DDE66FAF21FB1BC80071145D /* Base.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Base.cpp; sourceTree = "<group>"; };
+		DDE66FB021FB1BC80071145D /* Base.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Base.hpp; sourceTree = "<group>"; };
+		DDE66FB321FB1C870071145D /* EntitySystem.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = EntitySystem.cpp; sourceTree = "<group>"; };
+		DDE66FB421FB1C870071145D /* EntitySystem.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = EntitySystem.hpp; sourceTree = "<group>"; };
+		DDE66FB721FB1CC90071145D /* StaticMethods.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = StaticMethods.cpp; sourceTree = "<group>"; };
+		DDE66FB821FB1CC90071145D /* StaticMethods.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = StaticMethods.hpp; sourceTree = "<group>"; };
+		DDE66FBB21FB492C0071145D /* GUIInterface.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = GUIInterface.cpp; sourceTree = "<group>"; };
+		DDE66FBC21FB492C0071145D /* GUIInterface.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = GUIInterface.hpp; sourceTree = "<group>"; };
+		DDE66FBF21FB495B0071145D /* EssentialComponents.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = EssentialComponents.cpp; sourceTree = "<group>"; };
+		DDE66FC021FB495B0071145D /* EssentialComponents.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = EssentialComponents.hpp; sourceTree = "<group>"; };
+		DDE66FC921FB4FFA0071145D /* Data */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Data; path = NekoPlace/Data; sourceTree = SOURCE_ROOT; };
+		DDE66FCC21FB62B20071145D /* NekoNinja.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = NekoNinja.cpp; sourceTree = "<group>"; };
+		DDE66FCD21FB62B20071145D /* NekoNinja.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = NekoNinja.hpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		DDAB7465215D88050062F8B6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DDAB7482215D88430062F8B6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DDAB74C6215D8A5A0062F8B6 /* libbz2.tbd in Frameworks */,
+				DDAB74C4215D8A4C0062F8B6 /* libz.tbd in Frameworks */,
+				DDAB74C2215D8A3E0062F8B6 /* UIKit.framework in Frameworks */,
+				DDAB74C0215D8A370062F8B6 /* OpenGLES.framework in Frameworks */,
+				DDAB74BE215D8A310062F8B6 /* QuartzCore.framework in Frameworks */,
+				DDAB74BC215D8A2B0062F8B6 /* Foundation.framework in Frameworks */,
+				DDAB74BA215D8A250062F8B6 /* OpenAL.framework in Frameworks */,
+				DDAB74B8215D8A1E0062F8B6 /* CoreMotion.framework in Frameworks */,
+				DDAB74A9215D89DC0062F8B6 /* libsfml-system-s-d.a in Frameworks */,
+				DDAB74AA215D89DC0062F8B6 /* libsfml-window-s-d.a in Frameworks */,
+				DDAB74AB215D89DC0062F8B6 /* libsfml-graphics-s-d.a in Frameworks */,
+				DDAB74AC215D89DC0062F8B6 /* libsfml-network-s-d.a in Frameworks */,
+				DDAB74AD215D89DC0062F8B6 /* libsfml-audio-s-d.a in Frameworks */,
+				DDAB74AE215D89DC0062F8B6 /* libsfml-main-d.a in Frameworks */,
+				DDAB74B3215D8A110062F8B6 /* libvorbis.a in Frameworks */,
+				DDAB74B4215D8A110062F8B6 /* libogg.a in Frameworks */,
+				DDAB74B6215D8A110062F8B6 /* libflac.a in Frameworks */,
+				DDAB74D7215D8EA80062F8B6 /* libfreetype.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		DDAB745F215D88050062F8B6 = {
+			isa = PBXGroup;
+			children = (
+				DDAB746B215D88050062F8B6 /* NekoPlace */,
+				DDAB7486215D88430062F8B6 /* iOS */,
+				DDAB74C7215D8B950062F8B6 /* Resources */,
+				DDAB746A215D88050062F8B6 /* Products */,
+				DDAB74A2215D89DC0062F8B6 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		DDAB746A215D88050062F8B6 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				DDAB7469215D88050062F8B6 /* NekoPlace.app */,
+				DDAB7485215D88430062F8B6 /* iOS.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		DDAB746B215D88050062F8B6 /* NekoPlace */ = {
+			isa = PBXGroup;
+			children = (
+				DDAB7471215D88050062F8B6 /* main.cpp */,
+				DDE66FAC21FB1A5F0071145D /* Essentials */,
+				DDE66FAD21FB1A7E0071145D /* Engine */,
+				DDE66FAE21FB1A890071145D /* Components */,
+				DDAB746C215D88050062F8B6 /* Supporting Files */,
+			);
+			path = NekoPlace;
+			sourceTree = "<group>";
+		};
+		DDAB746C215D88050062F8B6 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				DDAB746D215D88050062F8B6 /* NekoPlace-Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		DDAB7486215D88430062F8B6 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				DDAB7496215D88450062F8B6 /* Assets.xcassets */,
+				DDAB749B215D88450062F8B6 /* Info.plist */,
+			);
+			path = iOS;
+			sourceTree = "<group>";
+		};
+		DDAB74A2215D89DC0062F8B6 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				DDAB74D6215D8EA80062F8B6 /* libfreetype.a */,
+				DDAB74D4215D8D370062F8B6 /* libiconv.tbd */,
+				DDAB74C5215D8A5A0062F8B6 /* libbz2.tbd */,
+				DDAB74C3215D8A4C0062F8B6 /* libz.tbd */,
+				DDAB74C1215D8A3E0062F8B6 /* UIKit.framework */,
+				DDAB74BF215D8A370062F8B6 /* OpenGLES.framework */,
+				DDAB74BD215D8A310062F8B6 /* QuartzCore.framework */,
+				DDAB74BB215D8A2B0062F8B6 /* Foundation.framework */,
+				DDAB74B9215D8A250062F8B6 /* OpenAL.framework */,
+				DDAB74B7215D8A1E0062F8B6 /* CoreMotion.framework */,
+				DDAB74B2215D8A110062F8B6 /* libflac.a */,
+				DDAB74B1215D8A110062F8B6 /* libfreetype.a */,
+				DDAB74B0215D8A110062F8B6 /* libogg.a */,
+				DDAB74AF215D8A110062F8B6 /* libvorbis.a */,
+				DDAB74A7215D89DC0062F8B6 /* libsfml-audio-s-d.a */,
+				DDAB74A5215D89DC0062F8B6 /* libsfml-graphics-s-d.a */,
+				DDAB74A8215D89DC0062F8B6 /* libsfml-main-d.a */,
+				DDAB74A6215D89DC0062F8B6 /* libsfml-network-s-d.a */,
+				DDAB74A3215D89DC0062F8B6 /* libsfml-system-s-d.a */,
+				DDAB74A4215D89DC0062F8B6 /* libsfml-window-s-d.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		DDAB74C7215D8B950062F8B6 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				DDE66FC921FB4FFA0071145D /* Data */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		DDE66FAC21FB1A5F0071145D /* Essentials */ = {
+			isa = PBXGroup;
+			children = (
+				DDAB746E215D88050062F8B6 /* ResourcePath.mm */,
+				DDAB7470215D88050062F8B6 /* ResourcePath.hpp */,
+				DDE66FAF21FB1BC80071145D /* Base.cpp */,
+				DDE66FB021FB1BC80071145D /* Base.hpp */,
+			);
+			path = Essentials;
+			sourceTree = "<group>";
+		};
+		DDE66FAD21FB1A7E0071145D /* Engine */ = {
+			isa = PBXGroup;
+			children = (
+				DDE66FB321FB1C870071145D /* EntitySystem.cpp */,
+				DDE66FB421FB1C870071145D /* EntitySystem.hpp */,
+				DDE66FB721FB1CC90071145D /* StaticMethods.cpp */,
+				DDE66FB821FB1CC90071145D /* StaticMethods.hpp */,
+				DDE66FBB21FB492C0071145D /* GUIInterface.cpp */,
+				DDE66FBC21FB492C0071145D /* GUIInterface.hpp */,
+			);
+			path = Engine;
+			sourceTree = "<group>";
+		};
+		DDE66FAE21FB1A890071145D /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				DDE66FBF21FB495B0071145D /* EssentialComponents.cpp */,
+				DDE66FC021FB495B0071145D /* EssentialComponents.hpp */,
+				DDE66FCC21FB62B20071145D /* NekoNinja.cpp */,
+				DDE66FCD21FB62B20071145D /* NekoNinja.hpp */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		DDAB7468215D88050062F8B6 /* NekoPlace */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DDAB747E215D88050062F8B6 /* Build configuration list for PBXNativeTarget "NekoPlace" */;
+			buildPhases = (
+				DDAB7464215D88050062F8B6 /* Sources */,
+				DDAB7465215D88050062F8B6 /* Frameworks */,
+				DDAB7466215D88050062F8B6 /* Resources */,
+				DDAB7467215D88050062F8B6 /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NekoPlace;
+			productName = "SFML-ios-test";
+			productReference = DDAB7469215D88050062F8B6 /* NekoPlace.app */;
+			productType = "com.apple.product-type.application";
+		};
+		DDAB7484215D88430062F8B6 /* iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DDAB749E215D88450062F8B6 /* Build configuration list for PBXNativeTarget "iOS" */;
+			buildPhases = (
+				DDAB7481215D88430062F8B6 /* Sources */,
+				DDAB7482215D88430062F8B6 /* Frameworks */,
+				DDAB7483215D88430062F8B6 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = iOS;
+			productName = iOS;
+			productReference = DDAB7485215D88430062F8B6 /* iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		DDAB7460215D88050062F8B6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1000;
+				ORGANIZATIONNAME = "Melanholy Hill";
+				TargetAttributes = {
+					DDAB7468215D88050062F8B6 = {
+						CreatedOnToolsVersion = 10.0;
+					};
+					DDAB7484215D88430062F8B6 = {
+						CreatedOnToolsVersion = 10.0;
+					};
+				};
+			};
+			buildConfigurationList = DDAB7463215D88050062F8B6 /* Build configuration list for PBXProject "NekoPlace" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = DDAB745F215D88050062F8B6;
+			productRefGroup = DDAB746A215D88050062F8B6 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				DDAB7468215D88050062F8B6 /* NekoPlace */,
+				DDAB7484215D88430062F8B6 /* iOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		DDAB7466215D88050062F8B6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DD27A47821FF43490012028E /* Assets.xcassets in Resources */,
+				DDE66FCA21FB4FFA0071145D /* Data in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DDAB7483215D88430062F8B6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DDE66FCB21FB4FFA0071145D /* Data in Resources */,
+				DDAB7497215D88450062F8B6 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		DDAB7467215D88050062F8B6 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# This shell script simply copies required SFML dylibs/frameworks into the application bundle frameworks folder.\n# If you're using static libraries (which is not recommended) you should remove this script from your project.\n\n# SETTINGS\nSFML_DEPENDENCIES_INSTALL_PREFIX=\"/Library/Frameworks\"\nCMAKE_INSTALL_FRAMEWORK_PREFIX=\"/Library/Frameworks\"\nCMAKE_INSTALL_LIB_PREFIX=\"/usr/local/lib\"\nFRAMEWORKS_FULL_PATH=\"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/\"\n\n# Are we building a project that uses frameworks or dylibs?\ncase \"$SFML_BINARY_TYPE\" in\n    DYLIBS)\n        frameworks=\"false\"\n        ;;\n    *)\n        frameworks=\"true\"\n        ;;\nesac\n\n# Echoes to stderr\nerror () # $* message to display\n{\n    echo $* 1>&2\n    exit 2\n}\n\nassert () # $1 is a boolean, $2...N is an error message\n{\n    if [ $# -lt 2 ]\n    then\n        error \"Internal error in assert: not enough args\"\n    fi\n\n    if [ $1 -ne 0 ]\n    then\n        shift\n        error \"$*\"\n    fi\n}\n\nforce_remove () # $@ is some paths\n{\n    test $# -ge 1\n    assert $? \"force_remove() requires at least one parameter\"\n    rm -fr $@\n    assert $? \"couldn't remove $@\"\n}\n\ncopy () # $1 is a source, $2 is a destination\n{\n    test $# -eq 2\n    assert $? \"copy() requires two parameters\"\n    ditto \"$1\" \"$2\"\n    assert $? \"couldn't copy $1 to $2\"\n}\n\nrequire () # $1 is a SFML module like 'system' or 'audio'\n{\n    dest=\"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/\"\n\n    if [ -z \"$1\" ]\n    then\n        error \"require() requires one parameter!\"\n    else\n        # clean potentially old stuff\n        force_remove \"$dest/libsfml-$1\"*\n        force_remove \"$dest/sfml-$1.framework\"\n\n        # copy SFML libraries\n        if [ \"$frameworks\" = \"true\" ]\n        then\n            source=\"$CMAKE_INSTALL_FRAMEWORK_PREFIX/sfml-$1.framework\"\n            target=\"sfml-$1.framework\"\n        elif [ \"$SFML_LINK_DYLIBS_SUFFIX\" = \"-d\" ]\n        then\n            source=\"$CMAKE_INSTALL_LIB_PREFIX/libsfml-$1-d.dylib\"\n            target=\"`readlink $source`\"\n        else\n            source=\"$CMAKE_INSTALL_LIB_PREFIX/libsfml-$1.dylib\"\n            target=\"`readlink $source`\"\n        fi\n\n        copy \"$source\" \"$dest/$target\"\n\n        # copy extra dependencies\n        if [ \"$1\" = \"audio\" ]\n        then\n            # copy \"FLAC\" \"ogg\" \"vorbis\" \"vorbisenc\" \"vorbisfile\" \"OpenAL\" frameworks too\n            for f in \"FLAC\" \"ogg\" \"vorbis\" \"vorbisenc\" \"vorbisfile\" \"OpenAL\"\n            do\n                copy \"$SFML_DEPENDENCIES_INSTALL_PREFIX/$f.framework\" \"$dest/$f.framework\"\n            done\n        elif [ \"$1\" = \"graphics\" ]\n        then\n            copy \"$SFML_DEPENDENCIES_INSTALL_PREFIX/freetype.framework\" \"$dest/freetype.framework\"\n        fi\n    fi\n}\n\nif [ -n \"$SFML_SYSTEM\" ]\nthen\n    require \"system\"\nfi\n\nif [ -n \"$SFML_AUDIO\" ]\nthen\n    require \"audio\"\nfi\n\nif [ -n \"$SFML_NETWORK\" ]\nthen\n    require \"network\"\nfi\n\nif [ -n \"$SFML_WINDOW\" ]\nthen\n    require \"window\"\nfi\n\nif [ -n \"$SFML_GRAPHICS\" ]\nthen\n    require \"graphics\"\nfi\n\n                ";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		DDAB7464215D88050062F8B6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DDE66FB921FB1CC90071145D /* StaticMethods.cpp in Sources */,
+				DDE66FBD21FB492C0071145D /* GUIInterface.cpp in Sources */,
+				DDE66FC121FB495B0071145D /* EssentialComponents.cpp in Sources */,
+				DDE66FCE21FB62B20071145D /* NekoNinja.cpp in Sources */,
+				DDE66FB121FB1BC80071145D /* Base.cpp in Sources */,
+				DDAB7472215D88050062F8B6 /* main.cpp in Sources */,
+				DDAB746F215D88050062F8B6 /* ResourcePath.mm in Sources */,
+				DDE66FB521FB1C870071145D /* EntitySystem.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DDAB7481215D88430062F8B6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DDF4EFC221FD24F90065A6AF /* ResourcePath.mm in Sources */,
+				DDE66FC221FB495B0071145D /* EssentialComponents.cpp in Sources */,
+				DDE66FB621FB1C870071145D /* EntitySystem.cpp in Sources */,
+				DDE66FB221FB1BC80071145D /* Base.cpp in Sources */,
+				DDE66FBA21FB1CC90071145D /* StaticMethods.cpp in Sources */,
+				DDE66FBE21FB492C0071145D /* GUIInterface.cpp in Sources */,
+				DDAB74A1215D89CD0062F8B6 /* main.cpp in Sources */,
+				DDE66FCF21FB62B20071145D /* NekoNinja.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		DDAB747C215D88050062F8B6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					x86_64,
+					arm64,
+					armv7,
+				);
+				CLANG_CXX_LANGUAGE_STANDARD = "c++11";
+				CLANG_CXX_LIBRARY = "libc++";
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include/,
+					"$(inherited)",
+					/Users/mayday/Documents/Libraries/SFML/include/,
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"/Users/mayday/Documents/Libraries/SFML/extlibs/libs-ios/",
+					/Users/mayday/Documents/Libraries/SFML/build/ios/lib/Debug/,
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"$(SFML_SYSTEM)",
+					"$(SFML_WINDOW)",
+					"$(SFML_GRAPHICS)",
+					"$(SFML_AUDIO)",
+					"$(SFML_NETWORK)",
+				);
+				SFML_AUDIO = "";
+				SFML_BINARY_TYPE = "";
+				SFML_GRAPHICS = "";
+				SFML_LINK_DYLIBS_PREFIX = "";
+				SFML_LINK_DYLIBS_SUFFIX = "";
+				SFML_LINK_FRAMEWORKS_PREFIX = "";
+				SFML_LINK_FRAMEWORKS_SUFFIX = "";
+				SFML_LINK_PREFIX = "$(SFML_LINK_$(SFML_BINARY_TYPE)_PREFIX)";
+				SFML_LINK_SUFFIX = "$(SFML_LINK_$(SFML_BINARY_TYPE)_SUFFIX)";
+				SFML_NETWORK = "";
+				SFML_SYSTEM = "";
+				SFML_WINDOW = "";
+			};
+			name = Debug;
+		};
+		DDAB747D215D88050062F8B6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					x86_64,
+					arm64,
+					armv7,
+				);
+				CLANG_CXX_LANGUAGE_STANDARD = "c++11";
+				CLANG_CXX_LIBRARY = "libc++";
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include/,
+					"$(inherited)",
+					/Users/mayday/Documents/Libraries/SFML/include/,
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"/Users/mayday/Documents/Libraries/SFML/extlibs/libs-ios/",
+					/Users/mayday/Documents/Libraries/SFML/build/ios/lib/Debug/,
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"$(SFML_SYSTEM)",
+					"$(SFML_WINDOW)",
+					"$(SFML_GRAPHICS)",
+					"$(SFML_AUDIO)",
+					"$(SFML_NETWORK)",
+				);
+				SFML_AUDIO = "";
+				SFML_BINARY_TYPE = "";
+				SFML_GRAPHICS = "";
+				SFML_LINK_DYLIBS_PREFIX = "";
+				SFML_LINK_DYLIBS_SUFFIX = "";
+				SFML_LINK_FRAMEWORKS_PREFIX = "";
+				SFML_LINK_FRAMEWORKS_SUFFIX = "";
+				SFML_LINK_PREFIX = "$(SFML_LINK_$(SFML_BINARY_TYPE)_PREFIX)";
+				SFML_LINK_SUFFIX = "$(SFML_LINK_$(SFML_BINARY_TYPE)_SUFFIX)";
+				SFML_NETWORK = "";
+				SFML_SYSTEM = "";
+				SFML_WINDOW = "";
+			};
+			name = Release;
+		};
+		DDAB747F215D88050062F8B6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-3";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = A2VZ8FCF86;
+				FRAMEWORK_SEARCH_PATHS = /Library/Frameworks/;
+				INFOPLIST_FILE = "$(SRCROOT)/NekoPlace/NekoPlace-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SFML_AUDIO = "$(SFML_LINK_PREFIX) sfml-audio$(SFML_LINK_SUFFIX)";
+				SFML_BINARY_TYPE = FRAMEWORKS;
+				SFML_GRAPHICS = "$(SFML_LINK_PREFIX) sfml-graphics$(SFML_LINK_SUFFIX)";
+				SFML_LINK_DYLIBS_PREFIX = "-l";
+				SFML_LINK_FRAMEWORKS_PREFIX = "-framework";
+				SFML_NETWORK = "$(SFML_LINK_PREFIX) sfml-network$(SFML_LINK_SUFFIX)";
+				SFML_SYSTEM = "$(SFML_LINK_PREFIX) sfml-system$(SFML_LINK_SUFFIX)";
+				SFML_WINDOW = "$(SFML_LINK_PREFIX) sfml-window$(SFML_LINK_SUFFIX)";
+			};
+			name = Debug;
+		};
+		DDAB7480215D88050062F8B6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-3";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = A2VZ8FCF86;
+				FRAMEWORK_SEARCH_PATHS = /Library/Frameworks/;
+				INFOPLIST_FILE = "$(SRCROOT)/NekoPlace/NekoPlace-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SFML_AUDIO = "$(SFML_LINK_PREFIX) sfml-audio$(SFML_LINK_SUFFIX)";
+				SFML_BINARY_TYPE = FRAMEWORKS;
+				SFML_GRAPHICS = "$(SFML_LINK_PREFIX) sfml-graphics$(SFML_LINK_SUFFIX)";
+				SFML_LINK_DYLIBS_PREFIX = "-l";
+				SFML_LINK_FRAMEWORKS_PREFIX = "-framework";
+				SFML_NETWORK = "$(SFML_LINK_PREFIX) sfml-network$(SFML_LINK_SUFFIX)";
+				SFML_SYSTEM = "$(SFML_LINK_PREFIX) sfml-system$(SFML_LINK_SUFFIX)";
+				SFML_WINDOW = "$(SFML_LINK_PREFIX) sfml-window$(SFML_LINK_SUFFIX)";
+			};
+			name = Release;
+		};
+		DDAB749F215D88450062F8B6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = A2VZ8FCF86;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = iOS/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = melancholyhill.NekoPlace;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		DDAB74A0215D88450062F8B6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = A2VZ8FCF86;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = iOS/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = melancholyhill.NekoPlace;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		DDAB7463215D88050062F8B6 /* Build configuration list for PBXProject "NekoPlace" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DDAB747C215D88050062F8B6 /* Debug */,
+				DDAB747D215D88050062F8B6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DDAB747E215D88050062F8B6 /* Build configuration list for PBXNativeTarget "NekoPlace" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DDAB747F215D88050062F8B6 /* Debug */,
+				DDAB7480215D88050062F8B6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DDAB749E215D88450062F8B6 /* Build configuration list for PBXNativeTarget "iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DDAB749F215D88450062F8B6 /* Debug */,
+				DDAB74A0215D88450062F8B6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = DDAB7460215D88050062F8B6 /* Project object */;
+}
