@@ -106,16 +106,10 @@ namespace ns
             entities.erase(it);
         }
     }
-    void EntitySystem::Destroy()
+    void EntitySystem::clear()
     {
-        if (entities.size())
-        {
-            for (auto it = entities.begin(); it != entities.end(); ++it)
-            {
-                (*it)->Destroy();
-                delete (*it);
-                //entities.erase(it);
-            }
-        }
+        list<Entity*>::iterator it = entities.begin();
+        while (it != entities.end()) { (*it)->Destroy(); delete (*it); entities.erase(it++); }
+        entities.clear();
     }
 }

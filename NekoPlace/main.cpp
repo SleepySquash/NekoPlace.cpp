@@ -14,6 +14,8 @@
 // function `resourcePath()` from ResourcePath.hpp
 //
 
+// TODO: Current game's timer
+
 #ifdef __APPLE__
     #include "TargetConditionals.h"
     #if TARGET_OS_IPHONE
@@ -30,7 +32,8 @@
 #include "Engine/EntitySystem.hpp"
 
 #include "Components/EssentialComponents.hpp"
-#include "Components/NekoNinja.hpp"
+#include "Components/NekoNinjaComponents/NekoNinja.hpp"
+#include "Components/NekoNinjaComponents/NekoMenu.hpp"
 
 using std::cout;
 using std::cin;
@@ -49,6 +52,7 @@ void CalculateScaleRatios(unsigned int width, unsigned int height)
     float ratioFactorY = (float)height/(float)width;
     
     gs::scale = factorX > factorY ? factorX : factorY;
+    gs::scScale = gs::scale;
     if (ratioFactorY > 1)
     {
         float m = gs::scale;
@@ -66,6 +70,22 @@ void CalculateScaleRatios(unsigned int width, unsigned int height)
             gs::scale = gs::scale - m*(1.2 - 1)*1.5 - m*(2 - 1.2)*0.17 - m*(2.46 - 2)*0.12 - m*(3 - 2.46)*0.07 - m*(4.8 - 3)*0.04 - m*(ratioFactorY - 4.8)*0.02;
         else
             gs::scale = gs::scale - m*(1.2 - 1)*1.5 - m*(2 - 1.2)*0.17 - m*(2.46 - 2)*0.12 - m*(3 - 2.46)*0.07 - m*(4.8 - 3)*0.04 - m*(8 - 4.8)*0.02;
+        
+        m = gs::scScale;
+        if (ratioFactorY < 1.2)
+            gs::scScale = gs::scScale - m*(ratioFactorY - 1)*0.72;
+        else if (ratioFactorY < 2)
+            gs::scScale = gs::scScale - m*(1.2 - 1)*0.72 - m*(ratioFactorY - 1.2)*0.17;
+        else if (ratioFactorY < 2.46)
+            gs::scScale = gs::scScale - m*(1.2 - 1)*0.72 - m*(2 - 1.2)*0.17 - m*(ratioFactorY - 2)*0.12;
+        else if (ratioFactorY < 3)
+            gs::scScale = gs::scScale - m*(1.2 - 1)*0.72 - m*(2 - 1.2)*0.17 - m*(2.46 - 2)*0.12 - m*(ratioFactorY - 2.46)*0.07;
+        else if (ratioFactorY < 4.8)
+            gs::scScale = gs::scScale - m*(1.2 - 1)*0.72 - m*(2 - 1.2)*0.17 - m*(2.46 - 2)*0.12 - m*(3 - 2.46)*0.07 - m*(ratioFactorY - 3)*0.04;
+        else if (ratioFactorY < 8)
+            gs::scScale = gs::scScale - m*(1.2 - 1)*0.72 - m*(2 - 1.2)*0.17 - m*(2.46 - 2)*0.12 - m*(3 - 2.46)*0.07 - m*(4.8 - 3)*0.04 - m*(ratioFactorY - 4.8)*0.02;
+        else
+            gs::scScale = gs::scScale - m*(1.2 - 1)*0.72 - m*(2 - 1.2)*0.17 - m*(2.46 - 2)*0.12 - m*(3 - 2.46)*0.07 - m*(4.8 - 3)*0.04 - m*(8 - 4.8)*0.02;
     }
     else if (ratioFactorX > 1)
     {
@@ -196,6 +216,7 @@ int main()
     
     
     EntitySystem system;
+    srand((unsigned int)time(nullptr));
     
     ///----------------------------------------------------------
     /// \brief Entity to hold Neko Ninja components
@@ -203,12 +224,9 @@ int main()
     /// Entity holds components like Neko Ninja controller, its background etc.
     ///
     ///----------------------------------------------------------
-    NekoNinja::Controller* control{ nullptr };
     Entity* Chocola = system.AddEntity();
     {
-        Chocola->AddComponent<NekoNinja::SceneBackground>();
-        control = Chocola->AddComponent<NekoNinja::Controller>();
-        Chocola->AddComponent<NekoNinja::GUIOverlay>(control);
+        Chocola->AddComponent<NekoNinja::MainMenu>();
     }
     
     ///----------------------------------------------------------
@@ -220,9 +238,10 @@ int main()
     ///----------------------------------------------------------
     Entity* Shimakaze = system.AddEntity();
     {
-        Shimakaze->AddComponent<EssentialComponents::DebugComponent>("Update 0 build 2");
+        Shimakaze->AddComponent<EssentialComponents::DebugComponent>("Update 0 build 3");
     }
     
+    bool displayWindow{ true };
     sf::Clock clock;
     window.setActive();
     while (window.isOpen())
@@ -233,8 +252,8 @@ int main()
             switch (event.type)
             {
                 case sf::Event::Closed: window.close(); break;
-                case sf::Event::GainedFocus: window.setFramerateLimit(gs::framerateLimit); break;
-                case sf::Event::LostFocus: if (gs::pauseOnFocusLost && control && !control->isGameOver) gs::isPause = true; window.setFramerateLimit(gs::framerateNoFocus); break;
+                case sf::Event::GainedFocus: displayWindow = true; window.setFramerateLimit(gs::framerateLimit); break;
+                case sf::Event::LostFocus: displayWindow = false; system.PollEvent(event); window.setFramerateLimit(gs::framerateNoFocus); break;
                     
                 case sf::Event::TouchEnded:
                 case sf::Event::TouchMoved:
@@ -248,6 +267,7 @@ int main()
                 case sf::Event::KeyPressed:
                     switch (event.key.code)
                     {
+                        case sf::Keyboard::Key::K: system.PollEvent(event); break;
                         default: break;
                     }
                     break;
@@ -266,11 +286,20 @@ int main()
         
         system.Update(clock.restart());
         
+#ifdef SFML_SYSTEM_IOS
+        if (displayWindow)
+        {
+            window.clear();
+            system.Draw(&window);
+            window.display(); //TODO: Might crash there if app is not running
+        }
+#else
         window.clear();
         system.Draw(&window);
-        window.display(); //TODO: Might crash there if app is not running
+        window.display();
+#endif
     }
     
-    system.Destroy();
+    system.clear();
     return EXIT_SUCCESS;
 }

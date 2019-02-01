@@ -23,38 +23,25 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef RESOURCE_PATH_HPP
-#define RESOURCE_PATH_HPP
-
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <string>
+#include "ResourcePath.hpp"
 
-////////////////////////////////////////////////////////////
-/// \brief Return the path to the resource folder.
-///
-/// \return The path to the resource folder associate
-/// with the main bundle or an empty string is there is no bundle.
-///
-////////////////////////////////////////////////////////////
-#include <SFML/Config.hpp>
+#ifndef __APPLE__
+#include "Base.hpp"
 
-#ifdef SFML_SYSTEM_IOS
-    std::string iOSDeviceName();
-    std::string documentsPath(void);
-    inline std::string resourcePath()
-    {
-        return "";
-    }
-    inline std::wstring executablePath()
-    {
-        return L"";
-    }
-#else
-    std::string resourcePath(void);
-    std::wstring executablePath(void);
-    std::string documentsPath(void);
-#endif
+std::string resourcePath(void)
+{
+    return "";
+}
+std::string documentsPath(void)
+{
+    return "";
+}
+std::wstring executablePath(void)
+{
+    return ns::base::GetCurrentWorkingDir();
+}
 
 #endif

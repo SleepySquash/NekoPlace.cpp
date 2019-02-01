@@ -81,6 +81,50 @@ namespace ns
             
             return false;
         }
+        /// Thanks to Maxim Suslov ( https://stackoverflow.com/users/3364871/maxim-suslov ) ///
+        bool CreateDirectory(const std::wstring& path)
+        {
+#ifdef _WIN32
+            int ret = _wmkdir(path.c_str());
+#else
+            std::string upath = utf8(path);
+            mode_t mode = 0755;
+            int ret = mkdir(upath.c_str(), mode);
+#endif
+            if (ret == 0)
+                return true;
+            
+            switch (errno)
+            {
+                case ENOENT:
+                    // parent didn't exist, try to create it
+                    {
+                        int pos = path.find_last_of('/');
+                        if (pos == std::string::npos)
+    #ifdef _WIN32
+                            pos = path.find_last_of('\\');
+                        if (pos == std::string::npos)
+    #endif
+                            return false;
+                        if (!CreateDirectory( path.substr(0, pos) ))
+                            return false;
+                    }
+                    // now, try to create again
+#ifdef _WIN32
+                    return (0 == _wmkdir(path.c_str()));
+#else
+                    return (0 == mkdir(upath.c_str(), mode));
+#endif
+                    
+                case EEXIST:
+                    // done!
+                    return FileExists(path);
+                    
+                default:
+                    return false;
+            }
+        }
+
         
         
         

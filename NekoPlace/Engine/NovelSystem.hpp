@@ -1,13 +1,13 @@
 //
-//  EntitySystem.hpp
+//  NovelSystem.hpp
 //  NovelSome
 //
-//  Created by Никита Исаенко on 26/08/2018.
+//  Created by Никита Исаенко on 08/09/2018.
 //  Copyright © 2018 Melancholy Hill. All rights reserved.
 //
 
-#ifndef EntitySystem_hpp
-#define EntitySystem_hpp
+#ifndef NovelSystem_hpp
+#define NovelSystem_hpp
 
 #include <iostream>
 #include <list>
@@ -19,20 +19,23 @@ using std::list;
 
 #include "StaticMethods.hpp"
 
+using std::cout;
+using std::cin;
+using std::endl;
+
 namespace ns
 {
-    class Component;
-    class Entity;
-    class EntitySystem;
+    class NovelObject;
+    class NovelSystem;
     
-    class Component
+    class NovelObject
     {
     public:
-        Entity* entity{ nullptr };
+        NovelSystem* novelSystem{ nullptr };
         bool offline{ false };
         int priority{ 0 };
         
-        virtual ~Component();
+        virtual ~NovelObject();
         virtual void Init();
         virtual void Update(const sf::Time&);
         virtual void Draw(sf::RenderWindow*);
@@ -40,31 +43,31 @@ namespace ns
         virtual void PollEvent(sf::Event& event);
         virtual void Destroy();
         void SetPriority(int priority);
-        void SetEntity(Entity* entity);
-        Entity* GetEntity();
+        void ChangePriority(int priority);
+        void SetNovelSystem(NovelSystem* novelSystem);
+        NovelSystem* GetNovelSystem();
     };
     
-    class Entity
+    class NovelSystem
     {
     public:
-        EntitySystem* system{ nullptr };
-        list<Component*> components;
+        list<NovelObject*> objects;
         
-        Entity();
-        Entity(EntitySystem* system);
+        NovelSystem();
         void Update(const sf::Time& elapsedTime);
         void Draw(sf::RenderWindow* window);
         void Resize(unsigned int width, unsigned int height);
         void PollEvent(sf::Event& event);
-        void PopComponent(Component* component);
-        void Destroy();
-        void SetEntitySystem(EntitySystem* system);
+        void PopComponent(NovelObject* component);
+        void clear();
+        void ChangePriorityOf(NovelObject* component, int priority);
+        
         template<typename T, typename ...Args> T* AddComponent(Args... args)
         {
             T* component = new T(args...);
-            components.push_back(component);
+            objects.push_back(component);
             
-            component->SetEntity(this);
+            component->SetNovelSystem(this);
             component->Init();
             component->Resize(gs::width, gs::height);
             
@@ -76,37 +79,22 @@ namespace ns
             component->priority = priority;
             
             bool done{ false };
-            for (list<Component*>::iterator it = components.begin(); it != components.end() && !done; ++it)
+            for (list<NovelObject*>::iterator it = objects.begin(); it != objects.end() && !done; ++it)
                 if ((*it)->priority > priority)
                 {
-                    components.insert(it, component);
+                    objects.insert(it, component);
                     done = true;
                 }
             if (!done)
-                components.push_back(component);
+                objects.push_back(component);
             
-            component->SetEntity(this);
+            component->SetNovelSystem(this);
             component->Init();
             component->Resize(gs::width, gs::height);
             
             return component;
         }
     };
-    
-    class EntitySystem
-    {
-    public:
-        list<Entity*> entities;
-        
-        EntitySystem();
-        void Update(const sf::Time& elapsedTime);
-        void Draw(sf::RenderWindow* window);
-        void Resize(unsigned int width, unsigned int height);
-        void PollEvent(sf::Event& event);
-        Entity* AddEntity();
-        void PopEntity(Entity* entity);
-        void clear();
-    };
 }
 
-#endif /* EntitySystem_hpp */
+#endif /* NovelSystem_hpp */

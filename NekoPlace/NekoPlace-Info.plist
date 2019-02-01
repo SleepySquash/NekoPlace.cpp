@@ -20,6 +20,8 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>2</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.arcade-games</string>
 	<key>NSHighResolutionCapable</key>
 	<true/>
 </dict>

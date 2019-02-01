@@ -201,11 +201,50 @@ namespace ns
                 return nullptr;
             }
             
-            sf::Image* image = new sf::Image();
             std::wstring fullPath = PathWithResolutionDetermination(imageName, mode);
             
+            if (base::FileExists(fullPath))
+            {
+                sf::Image* image = new sf::Image();
+                bool imageLoaded{ false };
+    #ifdef _WIN32
+                std::ifstream ifStream(fullPath, std::ios::binary | std::ios::ate);
+                if (!ifStream.is_open())
+                    std::cerr << "Unable to open file: " << base::ConvertToUTF8(fullPath) << std::endl;
+                else
+                {
+                    auto filesize = ifStream.tellg();
+                    char* fileInMemory = new char[static_cast<unsigned int>(filesize)];
+                    ifStream.seekg(0, std::ios::beg);
+                    ifStream.read(fileInMemory, filesize);
+                    ifStream.close();
+                    
+                    imageLoaded = image->loadFromMemory(fileInMemory, filesize);
+                    delete[] fileInMemory;
+                }
+    #else
+                if (!(imageLoaded = image->loadFromFile(base::utf8(fullPath))))
+                    std::cerr << "Unable to open file: " << base::utf8(fullPath) << std::endl;
+    #endif
+                
+                if (imageLoaded)
+                {
+                    images.emplace(imageName, ImageCollectorObject(image, nullptr, 1));
+                    return image;
+                }
+            }
+            return nullptr;
+        }
+    }
+    void ImageCollector::ThreadImage(std::wstring imageName, unsigned int mode, bool destroyable, bool loadTexture)
+    {
+        std::wstring fullPath = PathWithResolutionDetermination(imageName, mode);
+        
+        if (base::FileExists(fullPath))
+        {
+            sf::Image* image = new sf::Image();
             bool imageLoaded{ false };
-#ifdef _WIN32
+    #ifdef _WIN32
             std::ifstream ifStream(fullPath, std::ios::binary | std::ios::ate);
             if (!ifStream.is_open())
                 std::cerr << "Unable to open file: " << base::ConvertToUTF8(fullPath) << std::endl;
@@ -220,49 +259,17 @@ namespace ns
                 imageLoaded = image->loadFromMemory(fileInMemory, filesize);
                 delete[] fileInMemory;
             }
-#else
+    #else
             if (!(imageLoaded = image->loadFromFile(base::utf8(fullPath))))
                 std::cerr << "Unable to open file: " << base::utf8(fullPath) << std::endl;
-#endif
+    #endif
             
             if (imageLoaded)
             {
-                images.emplace(imageName, ImageCollectorObject(image, nullptr, 1));
-                return image;
+                images.emplace(imageName, ImageCollectorObject(image, nullptr, 0, destroyable));
+                if (loadTexture) { LoadTexture(imageName); --images[imageName].usage; }
+                //threads.erase(imageName);
             }
-            return nullptr;
-        }
-    }
-    void ImageCollector::ThreadImage(std::wstring imageName, unsigned int mode, bool destroyable)
-    {
-        sf::Image* image = new sf::Image();
-        std::wstring fullPath = PathWithResolutionDetermination(imageName, mode);
-        
-        bool imageLoaded{ false };
-#ifdef _WIN32
-        std::ifstream ifStream(fullPath, std::ios::binary | std::ios::ate);
-        if (!ifStream.is_open())
-            std::cerr << "Unable to open file: " << base::ConvertToUTF8(fullPath) << std::endl;
-        else
-        {
-            auto filesize = ifStream.tellg();
-            char* fileInMemory = new char[static_cast<unsigned int>(filesize)];
-            ifStream.seekg(0, std::ios::beg);
-            ifStream.read(fileInMemory, filesize);
-            ifStream.close();
-            
-            imageLoaded = image->loadFromMemory(fileInMemory, filesize);
-            delete[] fileInMemory;
-        }
-#else
-        if (!(imageLoaded = image->loadFromFile(base::utf8(fullPath))))
-            std::cerr << "Unable to open file: " << base::utf8(fullPath) << std::endl;
-#endif
-        
-        if (imageLoaded)
-        {
-            images.emplace(imageName, ImageCollectorObject(image, nullptr, 0, destroyable));
-            //threads.erase(imageName);
         }
     }
     void ImageCollector::PreloadImage(const std::wstring& imageName, unsigned int mode, bool destroyable)
@@ -276,7 +283,7 @@ namespace ns
                 if (images.find(imageName) != images.end() && images[imageName].image != nullptr)
                     return;
             }
-            threads.emplace(imageName, std::thread(&ThreadImage, imageName, mode, destroyable));
+            threads.emplace(imageName, std::thread(&ThreadImage, imageName, mode, destroyable, false));
         }
     }
     sf::Texture* ImageCollector::LoadTexture(const std::wstring& imageName, unsigned int mode)
@@ -297,6 +304,23 @@ namespace ns
             }
         }
         return nullptr;
+    }
+    void ImageCollector::PreloadTexture(const std::wstring& imageName, unsigned int mode, bool destroyable)
+    {
+        if (images.find(imageName) == images.end())
+        {
+            if (threads.find(imageName) != threads.end())
+            {
+                threads[imageName].join();
+                threads.erase(threads.find(imageName));
+                if (images.find(imageName) != images.end() && images[imageName].image != nullptr)
+                {
+                    if (!images[imageName].texture) { LoadTexture(imageName); --images[imageName].usage; }
+                    return;
+                }
+            }
+            threads.emplace(imageName, std::thread(&ThreadImage, imageName, mode, destroyable, true));
+        }
     }
     void ImageCollector::SetDestroyable(std::wstring imageName, bool destroyable)
     {
@@ -344,7 +368,160 @@ namespace ns
     }
     std::unordered_map<std::wstring, ImageCollectorObject> ic::images;
     std::unordered_map<std::wstring, std::thread> ic::threads;
-    ThreadsJoiner ic::threadsJoiner;
+    icThreadsJoiner ic::threadsJoiner;
+    
+    
+    
+    
+    sf::SoundBuffer* SoundCollector::LoadSound(const std::wstring& soundName, unsigned int mode)
+    {
+        if (sounds.find(soundName) != sounds.end())
+        {
+            if (threads.find(soundName) != threads.end())
+            {
+                if (threads[soundName].joinable()) threads[soundName].join();
+                threads.erase(soundName);
+            }
+            ++sounds[soundName].usage;
+            return sounds[soundName].sound;
+        }
+        else
+        {
+            if (threads.find(soundName) != threads.end())
+            {
+                threads[soundName].join();
+                threads.erase(soundName);
+                if (sounds.find(soundName) != sounds.end() && sounds[soundName].sound != nullptr)
+                {
+                    ++sounds[soundName].usage;
+                    return sounds[soundName].sound;
+                }
+                
+                return nullptr;
+            }
+            
+            std::wstring fullPath = base::utf16(resourcePath()) + soundName;
+            if (base::FileExists(fullPath))
+            {
+                sf::SoundBuffer* sound = new sf::SoundBuffer();
+                bool soundLoaded{ false };
+    #ifdef _WIN32
+                std::ifstream ifStream(fullPath, std::ios::binary | std::ios::ate);
+                if (!ifStream.is_open())
+                    std::cerr << "Unable to open file: " << base::ConvertToUTF8(fullPath) << std::endl;
+                else
+                {
+                    auto filesize = ifStream.tellg();
+                    char* fileInMemory = new char[static_cast<unsigned int>(filesize)];
+                    ifStream.seekg(0, std::ios::beg);
+                    ifStream.read(fileInMemory, filesize);
+                    ifStream.close();
+                    
+                    soundLoaded = sound->loadFromMemory(fileInMemory, filesize);
+                    delete[] fileInMemory;
+                }
+    #else
+                if (!(soundLoaded = sound->loadFromFile(base::utf8(fullPath))))
+                    std::cerr << "Unable to open file: " << base::utf8(fullPath) << std::endl;
+    #endif
+                
+                if (soundLoaded)
+                {
+                    sounds.emplace(soundName, SoundCollectorObject(sound, 1));
+                    return sound;
+                }
+            }
+            return nullptr;
+        }
+    }
+    void SoundCollector::ThreadSound(std::wstring soundName, unsigned int mode, bool destroyable)
+    {
+        sf::SoundBuffer* sound = new sf::SoundBuffer();
+        std::wstring fullPath = base::utf16(resourcePath()) + soundName;
+        
+        bool soundLoaded{ false };
+#ifdef _WIN32
+        std::ifstream ifStream(fullPath, std::ios::binary | std::ios::ate);
+        if (!ifStream.is_open())
+            std::cerr << "Unable to open file: " << base::ConvertToUTF8(fullPath) << std::endl;
+        else
+        {
+            auto filesize = ifStream.tellg();
+            char* fileInMemory = new char[static_cast<unsigned int>(filesize)];
+            ifStream.seekg(0, std::ios::beg);
+            ifStream.read(fileInMemory, filesize);
+            ifStream.close();
+            
+            soundLoaded = image->loadFromMemory(fileInMemory, filesize);
+            delete[] fileInMemory;
+        }
+#else
+        if (!(soundLoaded = sound->loadFromFile(base::utf8(fullPath))))
+            std::cerr << "Unable to open file: " << base::utf8(fullPath) << std::endl;
+#endif
+        
+        if (soundLoaded)
+        {
+            sounds.emplace(soundName, SoundCollectorObject(sound, 0, destroyable));
+            //threads.erase(imageName);
+        }
+    }
+    void SoundCollector::PreloadSound(const std::wstring& soundName, unsigned int mode, bool destroyable)
+    {
+        if (sounds.find(soundName) == sounds.end())
+        {
+            if (threads.find(soundName) != threads.end())
+            {
+                threads[soundName].join();
+                threads.erase(threads.find(soundName));
+                if (sounds.find(soundName) != sounds.end() && sounds[soundName].sound != nullptr)
+                    return;
+            }
+            if (base::FileExists(base::utf16(resourcePath()) + soundName))
+                threads.emplace(soundName, std::thread(&ThreadSound, soundName, mode, destroyable));
+        }
+    }
+    void SoundCollector::SetDestroyable(std::wstring soundName, bool destroyable)
+    {
+        if (sounds.find(soundName) != sounds.end())
+        {
+            sounds[soundName].destroyable = destroyable;
+            if (destroyable) if (sounds[soundName].usage <= 0) sc::EraseSound(soundName);
+        }
+    }
+    void SoundCollector::DeleteSound(const std::wstring& soundName)
+    {
+        if (sounds.find(soundName) != sounds.end())
+        {
+            --sounds[soundName].usage;
+            if (sounds[soundName].usage <= 0 && sounds[soundName].destroyable)
+                sc::EraseSound(soundName);
+        }
+    }
+    void SoundCollector::EraseSound(const std::wstring& soundName)
+    {
+        if (sounds.find(soundName) != sounds.end())
+        {
+            if (threads.find(soundName) != threads.end())
+            {
+                if (threads[soundName].joinable()) threads[soundName].join();
+                threads.erase(soundName);
+            }
+            
+            sf::SoundBuffer* sound = sounds[soundName].sound;
+            if (sound != nullptr) delete sound;
+            sounds.erase(soundName);
+        }
+    }
+    void SoundCollector::FreeSounds()
+    {
+        for (const auto& key : sounds)
+            if (key.second.sound != nullptr) delete key.second.sound;
+        sounds.clear();
+    }
+    std::unordered_map<std::wstring, SoundCollectorObject> sc::sounds;
+    std::unordered_map<std::wstring, std::thread> sc::threads;
+    scThreadsJoiner sc::threadsJoiner;
     
     
     
@@ -357,9 +534,8 @@ namespace ns
     unsigned int gs::height = 0;
     unsigned int gs::relativeWidth = 0;
     unsigned int gs::relativeHeight = 0;
-    float gs::scale = 1.f;
-    float gs::scalex = 1.f;
-    float gs::scaley = 1.f;
+    float gs::scale = 1.f; float gs::scScale = 1.f;
+    float gs::scalex = 1.f; float gs::scaley = 1.f;
     
     float gs::deltaVelocity = 1.f;
     
@@ -379,4 +555,10 @@ namespace ns
     
     bool gs::isPause = false;
     bool gs::pauseOnFocusLost = true;
+    bool gs::inGame = false;
+    
+    float gs::maxVolumeGlobal = 1.f;
+    float gs::maxVolumeMusic = 1.f;
+    float gs::maxVolumeAmbeint = 1.f;
+    float gs::maxVolumeSound = 1.f;
 }

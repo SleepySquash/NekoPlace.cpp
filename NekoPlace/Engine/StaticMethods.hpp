@@ -11,6 +11,7 @@
 
 #include <iostream>
 #include <unordered_map>
+#include <list>
 
 #include <thread>
 #include <codecvt>
@@ -52,7 +53,7 @@ namespace ns
     
     
     std::wstring PathWithResolutionDetermination(const std::wstring& fileName, unsigned int mode);
-    struct ThreadsJoiner;
+    struct icThreadsJoiner;
     struct ImageCollectorObject
     {
         sf::Image* image{ nullptr };
@@ -71,29 +72,49 @@ namespace ns
         static std::unordered_map<std::wstring, ImageCollectorObject> images;
         static std::unordered_map<std::wstring, std::thread> threads;
         
-        static ThreadsJoiner threadsJoiner;
+        static icThreadsJoiner threadsJoiner;
         static sf::Image* LoadImage(const std::wstring& imageName, unsigned int mode = 0);
-        static void ThreadImage(std::wstring imageName, unsigned int mode, bool destroyable = true);
+        static void ThreadImage(std::wstring imageName, unsigned int mode, bool destroyable = true, bool loadTexture = false);
         static void PreloadImage(const std::wstring& imageName, unsigned int mode = 0, bool destroyable = true);
         static sf::Texture* LoadTexture(const std::wstring& imageName, unsigned int mode = 0);
+        static void PreloadTexture(const std::wstring& imageName, unsigned int mode = 0, bool destroyable = true);
         static void SetDestroyable(std::wstring imageName, bool destroyable);
         static void DeleteImage(const std::wstring& imageName);
         static void EraseImage(const std::wstring& imageName);
         static void FreeImages();
     };
-    struct ThreadsJoiner { ~ThreadsJoiner() { for (auto& t : ImageCollector::threads) t.second.join(); ImageCollector::threads.clear(); } };
-    /*class TextureCollector
+    struct icThreadsJoiner { ~icThreadsJoiner() { for (auto& t : ImageCollector::threads) t.second.join(); ImageCollector::threads.clear(); } };
+    
+    
+    
+    struct scThreadsJoiner;
+    struct SoundCollectorObject
+    {
+        sf::SoundBuffer* sound{ nullptr };
+        int usage{ 0 };
+        bool destroyable{ true };
+        
+        SoundCollectorObject(sf::SoundBuffer* sound = nullptr, int usage = 0, bool destroyable = true) : sound(sound), usage(usage), destroyable(destroyable) { }
+    };
+    class SoundCollector
     {
     private:
-        TextureCollector() { }
+        SoundCollector() { }
         
     public:
-        static std::unordered_map<std::wstring, pair<sf::Texture*, int>> textures;
+        static std::unordered_map<std::wstring, SoundCollectorObject> sounds;
+        static std::unordered_map<std::wstring, std::thread> threads;
         
-        static sf::Texture* LoadTexture(const std::wstring& imageName, unsigned int mode = 0);
-        static void DeleteTexture(const std::wstring& imageName);
-        static void FreeTextures();
-    };*/
+        static scThreadsJoiner threadsJoiner;
+        static sf::SoundBuffer* LoadSound(const std::wstring& soundName, unsigned int mode = 0);
+        static void ThreadSound(std::wstring soundName, unsigned int mode, bool destroyable = true);
+        static void PreloadSound(const std::wstring& soundName, unsigned int mode = 0, bool destroyable = true);
+        static void SetDestroyable(std::wstring soundName, bool destroyable);
+        static void DeleteSound(const std::wstring& soundName);
+        static void EraseSound(const std::wstring& soundName);
+        static void FreeSounds();
+    };
+    struct scThreadsJoiner { ~scThreadsJoiner() { for (auto& t : SoundCollector::threads) t.second.join(); SoundCollector::threads.clear(); } };
     
     
     
@@ -105,7 +126,7 @@ namespace ns
         static unsigned int width;
         static unsigned int height;
         
-        static float scale;
+        static float scale, scScale;
         static float scalex, scaley;
         static unsigned int relativeWidth;
         static unsigned int relativeHeight;
@@ -124,11 +145,18 @@ namespace ns
         
         static bool isPause;
         static bool pauseOnFocusLost;
+        static bool inGame;
+        
+        static float maxVolumeGlobal;
+        static float maxVolumeMusic;
+        static float maxVolumeAmbeint;
+        static float maxVolumeSound;
     };
     
     typedef GlobalSettings gs;
     typedef FontCollector fc;
     typedef ImageCollector ic;
+    typedef SoundCollector sc;
 }
 
 #endif /* StaticMethods_hpp */

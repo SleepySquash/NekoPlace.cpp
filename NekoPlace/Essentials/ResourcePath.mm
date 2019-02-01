@@ -43,7 +43,18 @@
                                                 encoding:NSUTF8StringEncoding];
             return [path UTF8String];
         }
-        #else
+
+        ////////////////////////////////////////////////////////////
+        std::string documentsPath(void)
+        {
+            @autoreleasepool {
+                NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+                NSString *documentsDirectory = [paths firstObject];
+                return [documentsDirectory UTF8String] + std::string("/");
+            }
+            return "";
+        }
+    #else
         #import <Foundation/Foundation.h>
 
         ////////////////////////////////////////////////////////////
@@ -66,6 +77,17 @@
             [pool drain];
             
             return rpath;
+        }
+
+        ////////////////////////////////////////////////////////////
+        std::string documentsPath(void)
+        {
+            @autoreleasepool {
+                NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+                NSString *documentsDirectory = [paths firstObject];
+                return [documentsDirectory UTF8String] + std::string("/Melancholy Hill/NekoPlace/");
+            }
+            return "";
         }
 
         std::wstring executablePath(void)

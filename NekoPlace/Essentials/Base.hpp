@@ -25,6 +25,7 @@ namespace ns
         std::wstring GetCurrentWorkingDir();
         bool FileExists(const std::wstring& path);
         bool DoesFileExistWithResolutionClass(const std::wstring& currentPath);
+        bool CreateDirectory(const std::wstring& path);
         
         std::wstring GetFolderPath(const std::wstring& path);
         std::wstring GetExtentionFromString(std::wstring filename);

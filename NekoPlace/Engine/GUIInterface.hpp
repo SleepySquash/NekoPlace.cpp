@@ -19,9 +19,11 @@ namespace ns
     class GUIButton
     {
     public:
-        bool isPressed{ false };
-        float pressedAfterColor{ 0.f };
         bool fontLoaded{ false };
+        
+        bool onPress{ false };
+        bool wasPressed{ false };
+        sf::Vector2i dot;
         
         sf::Text text;
         sf::String string;
@@ -37,12 +39,11 @@ namespace ns
         void Update(const sf::Time& elapsedTime);
         void Draw(sf::RenderTarget* window);
         void Resize(unsigned int width, unsigned int height);
-        void PollEvent(sf::Event& event);
-        bool IsPressed();
-        void SetPosition(float x, float y);
-        void SetFont(const std::wstring& fontname);
-        void SetString(const std::wstring& string);
-        void SetCharacterSize(const unsigned int size);
+        bool PollEvent(sf::Event& event);
+        void setPosition(float x, float y);
+        void setFont(const std::wstring& fontname);
+        void setString(const std::wstring& string);
+        void setCharacterSize(const unsigned int size);
     };
 }
 
