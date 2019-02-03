@@ -52,6 +52,8 @@
 		DDE66FCE21FB62B20071145D /* NekoNinja.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DDE66FCC21FB62B20071145D /* NekoNinja.cpp */; };
 		DDE66FCF21FB62B20071145D /* NekoNinja.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DDE66FCC21FB62B20071145D /* NekoNinja.cpp */; };
 		DDF4EFC221FD24F90065A6AF /* ResourcePath.mm in Sources */ = {isa = PBXBuildFile; fileRef = DDAB746E215D88050062F8B6 /* ResourcePath.mm */; };
+		DDFB8088220716BC00BEA832 /* NovelSomeScript.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DDFB8086220716BC00BEA832 /* NovelSomeScript.cpp */; };
+		DDFB8089220716BC00BEA832 /* NovelSomeScript.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DDFB8086220716BC00BEA832 /* NovelSomeScript.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -104,6 +106,9 @@
 		DDE66FC921FB4FFA0071145D /* Data */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Data; path = NekoPlace/Data; sourceTree = SOURCE_ROOT; };
 		DDE66FCC21FB62B20071145D /* NekoNinja.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = NekoNinja.cpp; sourceTree = "<group>"; };
 		DDE66FCD21FB62B20071145D /* NekoNinja.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = NekoNinja.hpp; sourceTree = "<group>"; };
+		DDFB8086220716BC00BEA832 /* NovelSomeScript.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = NovelSomeScript.cpp; sourceTree = "<group>"; };
+		DDFB8087220716BC00BEA832 /* NovelSomeScript.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = NovelSomeScript.hpp; sourceTree = "<group>"; };
+		DDFB808B2207178000BEA832 /* List.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = List.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -257,12 +262,15 @@
 			children = (
 				DDE66FB321FB1C870071145D /* EntitySystem.cpp */,
 				DDE66FB421FB1C870071145D /* EntitySystem.hpp */,
+				DDFB808B2207178000BEA832 /* List.hpp */,
 				DDE66FB721FB1CC90071145D /* StaticMethods.cpp */,
 				DDE66FB821FB1CC90071145D /* StaticMethods.hpp */,
-				DDE66FBB21FB492C0071145D /* GUIInterface.cpp */,
-				DDE66FBC21FB492C0071145D /* GUIInterface.hpp */,
+				DDFB8086220716BC00BEA832 /* NovelSomeScript.cpp */,
+				DDFB8087220716BC00BEA832 /* NovelSomeScript.hpp */,
 				DD65CFDF2200D1A900CBEF72 /* NovelSystem.cpp */,
 				DD65CFE02200D1A900CBEF72 /* NovelSystem.hpp */,
+				DDE66FBB21FB492C0071145D /* GUIInterface.cpp */,
+				DDE66FBC21FB492C0071145D /* GUIInterface.hpp */,
 			);
 			path = Engine;
 			sourceTree = "<group>";
@@ -403,6 +411,7 @@
 				DDE66FBD21FB492C0071145D /* GUIInterface.cpp in Sources */,
 				DDE66FC121FB495B0071145D /* EssentialComponents.cpp in Sources */,
 				DD65CFE12200D1A900CBEF72 /* NovelSystem.cpp in Sources */,
+				DDFB8088220716BC00BEA832 /* NovelSomeScript.cpp in Sources */,
 				DD65CFDD2200D12200CBEF72 /* NekoHelpers.cpp in Sources */,
 				DDE66FCE21FB62B20071145D /* NekoNinja.cpp in Sources */,
 				DDE66FB121FB1BC80071145D /* Base.cpp in Sources */,
@@ -421,6 +430,7 @@
 				DDE66FC221FB495B0071145D /* EssentialComponents.cpp in Sources */,
 				DDE66FB621FB1C870071145D /* EntitySystem.cpp in Sources */,
 				DD65CFE22200D1A900CBEF72 /* NovelSystem.cpp in Sources */,
+				DDFB8089220716BC00BEA832 /* NovelSomeScript.cpp in Sources */,
 				DD65CFDE2200D12200CBEF72 /* NekoHelpers.cpp in Sources */,
 				DDE66FB221FB1BC80071145D /* Base.cpp in Sources */,
 				DDE66FBA21FB1CC90071145D /* StaticMethods.cpp in Sources */,

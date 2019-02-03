@@ -10,6 +10,7 @@
 #define Base_hpp
 
 #include <iostream>
+#include "../Engine/NovelSomeScript.hpp"
 
 //FileExists
 #include <codecvt>
@@ -32,12 +33,14 @@ namespace ns
         std::wstring GetStringWithNoExtention(const std::wstring& filename, const std::wstring& extention);
         
         size_t GetLengthWONewLinesAndSpaces(const std::wstring& string);
+        
+        int atoi(const std::wstring& stringValue);
+        float atof(const std::wstring& stringValue);
+        bool atob(const std::wstring& stringValue);
     }
 }
-namespace nss
-{
-    bool Command(const std::string& line, const std::string& command);
-    std::string ParseUntil(std::string line, const char until, unsigned int from = 0);
-}
+
+using ns::base::utf8;
+using ns::base::utf16;
 
 #endif /* Base_hpp */

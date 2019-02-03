@@ -10,8 +10,6 @@
 
 namespace NekoNinja
 {
-    Player* Player::self = new Player();
-    
     float NekoObject::gravity = 0.19f * 60 * 60;
     float NekoObject::yStartVelocity = -17.f * 60;
     int NekoObject::yStartRandomVelocity = 4*60;
@@ -19,12 +17,13 @@ namespace NekoNinja
     float Controller::scoreMultiplier = 1.f;
     
     Controller* NekoObject::control = nullptr;
+    unsigned int* NekoObject::tamedArray = nullptr;
     
     /*std::sort(s.begin(), s.end(), [](int a, int b) {
         return a > b;
     });*/
     vector<NekoInfo> NekoLibrary::neko = {
-        NekoInfo(L"Shigure",  1.f, 155, 30, 120, 70),
+        NekoInfo(L"Shigure",  1.f, 155, 30, 120, 70, true),
         NekoInfo(L"Azuki",    1.f, 115, 75, 98, 80),
         NekoInfo(L"Poop",     0.68f, 20, 20, 20, 20),
         NekoInfo(L"Cinnamon", 0.5f, 144, 50, 144, 70),
@@ -33,6 +32,9 @@ namespace NekoNinja
         NekoInfo(L"Vanilla",  0.1f, 185, 75, 167, 70),
         NekoInfo(L"Chocola",  0.1f, 168, 80, 160, 70),
     };
+    list<NekoEntity> RoomLibrary::neko;
+    
+    Player* Player::self = new Player();
     
     
     
@@ -55,6 +57,8 @@ namespace NekoNinja
             level = (unsigned int)std::atol(base::utf8(line).c_str());
             std::getline(wif, line);
             exp = (unsigned int)std::atol(base::utf8(line).c_str());
+            
+            wif.close();
         }
         switch (level)
         {
@@ -76,6 +80,48 @@ namespace NekoNinja
             default: expNeeded = 2000; break;
         }
         expRatio = (float)exp/expNeeded;
+        
+#ifdef _WIN32
+        wif.open(nekoPath);
+#else
+        wif.open(base::utf8(nekoPath));
+#endif
+        wif.imbue(std::locale(std::locale(), new std::codecvt_utf8<wchar_t>));
+        
+        if (wif.is_open())
+        {
+            std::wstring line;
+            bool nekoReading{ false };
+            vector<NekoInfo>::iterator it{ nl::neko.end() };
+            
+            while (!wif.eof())
+            {
+                std::getline(wif, line);
+                if (!nekoReading)
+                {
+                    std::wstring nekoName = L"";
+                    for (int i = 0; i < line.size(); ++i) if (line[i] != 13) nekoName += line[i];
+                    it = std::find_if(nl::neko.begin(), nl::neko.end(), [&nekoName](const NekoInfo& m) { return m.name == nekoName; });
+                    if (it != nl::neko.end()) (*it).tamed = true;
+                    nekoReading = true;
+                }
+                else
+                {
+                    if (it != nl::neko.end())
+                    {
+                        int pos{ 0 };
+                        
+                        std::wstring levelStr = nss::ParseUntil(line, L' ', pos);
+                        (*it).level = base::atoi(levelStr); pos += levelStr.length() + 1;
+                    }
+                    nekoReading = false;
+                }
+            }
+            
+            wif.close();
+        }
+        
+        for (auto& n : nl::neko) if (n.tamed) rl::neko.emplace_back(&n);
     }
     Player::~Player()
     {
@@ -99,6 +145,48 @@ namespace NekoNinja
             wof << exp << endl;
         }
     }
+    void Player::SaveNeko(NekoInfo* info)
+    {
+        if (!base::FileExists(settingsPath))
+            base::CreateDirectory(base::utf16(documentsPath()));
+        
+        std::wofstream wof;
+#ifdef _WIN32
+        wof.open(nekoPath, std::wofstream::app);
+#else
+        wof.open(base::utf8(nekoPath), std::wofstream::app);
+#endif
+        wof.imbue(std::locale(std::locale(), new std::codecvt_utf8<wchar_t>));
+        if (wof.is_open())
+        {
+            wof << info->name << endl;
+            wof << info->level << L' ' << endl;
+        }
+    }
+    void Player::SaveNekos()
+    {
+        if (!base::FileExists(settingsPath))
+            base::CreateDirectory(base::utf16(documentsPath()));
+        
+        std::wofstream wof;
+#ifdef _WIN32
+        wof.open(nekoPath);
+#else
+        wof.open(base::utf8(nekoPath));
+#endif
+        wof.imbue(std::locale(std::locale(), new std::codecvt_utf8<wchar_t>));
+        if (wof.is_open())
+        {
+            for (auto& neko : nl::neko)
+            {
+                if (neko.tamed)
+                {
+                    wof << neko.name << endl;
+                    wof << neko.level << L' ' << endl;
+                }
+            }
+        }
+    }
     void Player::AddExperience(unsigned int xp)
     {
         exp += xp;
@@ -117,7 +205,11 @@ namespace NekoNinja
     void SceneBackground::Init()
     {
         sf::Texture* texture = ic::LoadTexture(imagePath);
-        if (texture != nullptr) { sprite.setTexture(*texture); spriteLoaded = true; }
+        if (texture != nullptr)
+        {
+            sprite.setTexture(*texture); spriteLoaded = true;
+            sprite.setOrigin(texture->getSize().x/2, texture->getSize().y/2);
+        }
     }
     void SceneBackground::Resize(unsigned int width, unsigned int height)
     {
@@ -128,6 +220,7 @@ namespace NekoNinja
             
             float scaleFactor = factorX > factorY ? factorX : factorY;
             sprite.setScale(scaleFactor, scaleFactor);
+            sprite.setPosition(width/2, height/2);
         }
     }
     void SceneBackground::Draw(sf::RenderWindow* window)
@@ -171,7 +264,9 @@ namespace NekoNinja
         expShape.setFillColor(sf::Color(30, 30, 30, 255));
         resultsShape.setFillColor(sf::Color(0,0,0,150));
         resultsLine.setFillColor(sf::Color::White);
+        newNekoLine.setFillColor(sf::Color::White);
         menuShape.setFillColor(sf::Color(0,0,0,150));
+        newNekoShape.setFillColor(sf::Color(212, 45, 138, 255));
         
         pauseText.setFillColor(sf::Color::White);
         pauseText.setOutlineColor(sf::Color::Black);
@@ -200,7 +295,7 @@ namespace NekoNinja
         resultsOkButton.setFont(L"Pacifica.ttf");
         resultsOkButton.setString(L"OK");
         resultsOkButton.setCharacterSize(108);
-        resultsOkButton.valign = GUIButton::valignEnum::bottom;
+        resultsOkButton.valign = Valign::Bottom;
         
         
         menuText.setFillColor(sf::Color::White);
@@ -214,9 +309,11 @@ namespace NekoNinja
         menuRetryButton.setFont(L"Pacifica.ttf");
         menuRetryButton.setString(L"Снова");
         menuRetryButton.setCharacterSize(108);
+        menuRetryButton.valign = Valign::Top;
         menuLeaveButton.setFont(L"Pacifica.ttf");
         menuLeaveButton.setString(L"Домой");
         menuLeaveButton.setCharacterSize(108);
+        menuLeaveButton.valign = Valign::Top;
         
         pauseButton.setFont(L"Pacifica.ttf");
         pauseButton.setString(L"Домой");
@@ -255,6 +352,10 @@ namespace NekoNinja
         
         resultsShape.setSize({width * 5.f/6, height * 5.f/6});
         resultsShape.setPosition((width * 1.f/6)/2, (height * 1.f/6)/2);
+        newNekoShape.setSize({resultsShape.getSize().x, 1});
+        newNekoShape.setPosition(resultsShape.getPosition().x, 0);
+        newNekoLine.setSize({resultsShape.getSize().x, 2*gs::scale});
+        newNekoLine.setPosition(resultsShape.getPosition().x, 0);
         
         resultsText.setOutlineThickness(gs::scale);
         resultsText.setCharacterSize((unsigned int)(108 * gs::scale));
@@ -286,6 +387,7 @@ namespace NekoNinja
         menuLeaveButton.setPosition(width/2, menuRetryButton.text.getPosition().y + menuRetryButton.text.getLocalBounds().height + 44*gs::scale);
         
         
+        results_yyNeko = resultsLine.getPosition().y + 10*gs::scaley;
         float blockHeight;
         {
             float yy = 0;
@@ -436,6 +538,52 @@ namespace NekoNinja
                 }
                 resultsOkButton.Draw(window);
             }
+            else if (drawNewNeko)
+            {
+                window->draw(resultsShape);
+                window->draw(resultsLine);
+                window->draw(resultsText);
+                
+                float yy = results_yyNeko;
+                
+                helperText.setCharacterSize((unsigned int)(68 * gs::scale));
+                helperText.setString(L"Получено:");
+                helperText.setPosition(resultsShape.getPosition().x + 10*gs::scalex, yy - 5*gs::scale);
+                window->draw(helperText); yy += helperText.getGlobalBounds().height + 15*gs::scaley;
+                
+                newNekoLine.setPosition(newNekoLine.getPosition().x, yy);
+                window->draw(newNekoLine); yy += 2*gs::scale;
+                
+                for (auto neko : newNekoList)
+                {
+                    if (ic::FindTexture(L"Data/Neko/" + neko->name + L".png") != nullptr)
+                        newNekoSprite.setTexture(*ic::FindTexture(L"Data/Neko/" + neko->name + L".png"), true);
+                    float factorScale = (90*gs::scaley)/newNekoSprite.getLocalBounds().height;
+                    newNekoSprite.setScale(factorScale, factorScale);
+                    newNekoSprite.setPosition(resultsShape.getPosition().x, yy);
+                    
+                    newNekoShape.setSize({newNekoShape.getSize().x, newNekoSprite.getGlobalBounds().height});
+                    newNekoShape.setPosition(newNekoShape.getPosition().x, yy);
+                    newNekoShape.setFillColor(neko->color);
+                    window->draw(newNekoShape);
+                    window->draw(newNekoSprite);
+                    
+                    helperText.setCharacterSize((unsigned int)(60 * gs::scaley));
+                    helperText.setString(neko->name);
+                    helperText.setPosition((resultsShape.getPosition().x + newNekoSprite.getGlobalBounds().width) + (resultsShape.getSize().x - newNekoSprite.getGlobalBounds().width)/2 - helperText.getGlobalBounds().width/2, yy - 10*gs::scaley);
+                    window->draw(helperText); float mereYY = helperText.getGlobalBounds().height;
+                    
+                    helperText.setCharacterSize((unsigned int)(32 * gs::scaley)); helperText.setString(L"кошкодевочка");
+                    helperText.setPosition((resultsShape.getPosition().x + newNekoSprite.getGlobalBounds().width) + (resultsShape.getSize().x - newNekoSprite.getGlobalBounds().width)/2 - helperText.getGlobalBounds().width/2, yy + mereYY - gs::scaley);
+                    window->draw(helperText);
+                    
+                    yy += 90*gs::scaley;
+                    newNekoLine.setPosition(newNekoLine.getPosition().x, yy);
+                    window->draw(newNekoLine); yy += 2*gs::scaley;
+                }
+                
+                resultsOkButton.Draw(window);
+            }
             else
             {
                 window->draw(menuShape);
@@ -451,7 +599,14 @@ namespace NekoNinja
         {
             if (control->isGameOver)
             {
-                if (drawResults) { if (resultsOkButton.PollEvent(event)) { drawResults = false; } }
+                if (drawResults)
+                {
+                    if (resultsOkButton.PollEvent(event))
+                    {
+                        drawResults = false; drawNewNeko = newNekoAvailable; resultsOkButton.setString(L"OK");
+                        resultsOkButton.setPosition(gs::width/2, gs::height - resultsShape.getPosition().y - 42*gs::scale);
+                    }
+                } else if (drawNewNeko) { if (resultsOkButton.PollEvent(event)) { drawNewNeko = false; } }
                 else
                 {
                     if (menuLeaveButton.PollEvent(event)) control->ReturnToMenu();
@@ -477,9 +632,26 @@ namespace NekoNinja
             else
             {
                 if (drawResults) resultsOkButton.PollEvent(event);
+                else if (drawNewNeko) resultsOkButton.PollEvent(event);
                 else { menuLeaveButton.PollEvent(event); menuRetryButton.PollEvent(event); }
             }
         }
+    }
+    void GUIOverlay::GameOver()
+    {
+        for (unsigned int i = nl::neko.size() - 1; i >= 0; --i)
+        {
+            if (!nl::neko[i].tamed && NekoObject::tamedArray[i])
+            {
+                newNekoList.push_back(&nl::neko[i]);
+                rl::neko.emplace_back(&nl::neko[i]);
+            }
+            if (i == 0) break;
+        }
+        newNekoAvailable = (newNekoList.size() != 0);
+        
+        if (newNekoAvailable) resultsOkButton.setString(L"ДАЛЕЕ"); else resultsOkButton.setString(L"OK");
+        resultsOkButton.setPosition(gs::width/2, gs::height - resultsShape.getPosition().y - 42*gs::scale);
     }
     
     
@@ -490,13 +662,13 @@ namespace NekoNinja
     
     void NekoObject::Init()
     {
-        float possibility = (rand() % 1000000) / 1000000.f;
+        float possibility = (rand() % 10000) / 10000.f;
         unsigned long last = 0;
         for (; last < nl::neko.size(); ++last)
             if (nl::neko[last].chance < possibility) break;
         
-        int nekoChance = rand() % last;
-        nekoInfo = &nl::neko[nekoChance];
+        nekoIndex = rand() % last;
+        nekoInfo = &nl::neko[nekoIndex];
         
         x = rand() % gs::relativeWidth;
         y = gs::relativeHeight;
@@ -528,7 +700,7 @@ namespace NekoNinja
     {
         float yVelocity_prev = yVelocity;
         yVelocity += gravity * elapsedTime.asSeconds();
-        if (y > (gs::relativeHeight + 100)) Destroy();
+        if (y > (gs::relativeHeight + 100)) offline = true;
         
         x += xVelocity * elapsedTime.asSeconds();
         y += 0.5 * (yVelocity + yVelocity_prev) * elapsedTime.asSeconds();
@@ -556,7 +728,10 @@ namespace NekoNinja
             }
             else
             {
-                float possibility = (rand() % 1000000) / 1000000.f;
+                ++tamedArray[nekoIndex];
+                //nekoInfo->tamed = true;
+                
+                float possibility = (rand() % 10000) / 10000.f;
                 if (possibility <= control->criticalHitPossibility)
                 {
                     control->score += 100 * Controller::scoreMultiplier;
@@ -646,6 +821,7 @@ namespace NekoNinja
         
         for (int i = 0; i < difficulty; ++i) ApplyDifficulty(++currentDifficulty);
         firstNeko = new NekoObject();
+        NekoObject::tamedArray = new unsigned int[nl::neko.size()]();
         
         std::wifstream wif;
 #ifdef _WIN32
@@ -924,6 +1100,11 @@ namespace NekoNinja
         Player::self->AddExperience(score*0.1);
         Player::self->SaveData();
         
+        gui.GameOver();
+        for (unsigned int i = 0; i < nl::neko.size(); ++i)
+            if (NekoObject::tamedArray[i]) nl::neko[i].tamed = true;
+        Player::self->SaveNekos();
+        
         if (score > topScore)
         {
             topScore = score;
@@ -933,7 +1114,7 @@ namespace NekoNinja
             
             std::wofstream wof;
 #ifdef _WIN32
-            wof.open(player->scoresPath);
+            wof.open(Player::self->scoresPath);
 #else
             wof.open(base::utf8(Player::self->scoresPath));
 #endif
@@ -969,6 +1150,8 @@ namespace NekoNinja
         DefaultGamemodeSettings();
         
         
+        for (unsigned int i = 0; i < nl::neko.size(); ++i) NekoObject::tamedArray[i] = 0;
+        gui.newNekoList.clear();
         for (auto n : nekos) delete n;
         nekos.clear();
         system.clear();
@@ -985,6 +1168,7 @@ namespace NekoNinja
     {
         gs::isPause = false;
         entity->PopComponent(this);
+        entity->system->Resize(gs::width, gs::height);
     }
     void Controller::SpawnNeko()
     {
@@ -1007,11 +1191,9 @@ namespace NekoNinja
         Controller::scoreMultiplier *= 1.04;
         switch (diff)
         {
-            case 7:
             case 1:
                 nekoScale *= 0.9;
                 break;
-            case 6:
             case 4:
             case 2:
                 nekoScale *= 0.95;
@@ -1030,8 +1212,8 @@ namespace NekoNinja
                 break;
             default:
                 nekoScale *= 0.98;
-                baseAttackTime *= 0.97;
-                randomAttackTime *= 0.97;
+                baseAttackTime *= 0.93;
+                randomAttackTime *= 0.93;
                 attackingAreaTime *= 0.95;
                 NekoObject::gravity *= 1.05; NekoObject::gravity *= 1.05;
                 NekoObject::yStartVelocity *= 1.05;

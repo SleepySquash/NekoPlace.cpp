@@ -73,11 +73,13 @@ namespace ns
         static std::unordered_map<std::wstring, std::thread> threads;
         
         static icThreadsJoiner threadsJoiner;
-        static sf::Image* LoadImage(const std::wstring& imageName, unsigned int mode = 0);
+        static sf::Image* LoadImage(const std::wstring& imageName, unsigned int mode = 2);
         static void ThreadImage(std::wstring imageName, unsigned int mode, bool destroyable = true, bool loadTexture = false);
-        static void PreloadImage(const std::wstring& imageName, unsigned int mode = 0, bool destroyable = true);
-        static sf::Texture* LoadTexture(const std::wstring& imageName, unsigned int mode = 0);
-        static void PreloadTexture(const std::wstring& imageName, unsigned int mode = 0, bool destroyable = true);
+        static void PreloadImage(const std::wstring& imageName, unsigned int mode = 2, bool destroyable = true);
+        static sf::Texture* LoadTexture(const std::wstring& imageName, unsigned int mode = 2);
+        static void PreloadTexture(const std::wstring& imageName, unsigned int mode = 2, bool destroyable = true);
+        static sf::Image* FindImage(const std::wstring& imageName);
+        static sf::Texture* FindTexture(const std::wstring& imageName);
         static void SetDestroyable(std::wstring imageName, bool destroyable);
         static void DeleteImage(const std::wstring& imageName);
         static void EraseImage(const std::wstring& imageName);
@@ -106,9 +108,9 @@ namespace ns
         static std::unordered_map<std::wstring, std::thread> threads;
         
         static scThreadsJoiner threadsJoiner;
-        static sf::SoundBuffer* LoadSound(const std::wstring& soundName, unsigned int mode = 0);
+        static sf::SoundBuffer* LoadSound(const std::wstring& soundName, unsigned int mode = 3);
         static void ThreadSound(std::wstring soundName, unsigned int mode, bool destroyable = true);
-        static void PreloadSound(const std::wstring& soundName, unsigned int mode = 0, bool destroyable = true);
+        static void PreloadSound(const std::wstring& soundName, unsigned int mode = 3, bool destroyable = true);
         static void SetDestroyable(std::wstring soundName, bool destroyable);
         static void DeleteSound(const std::wstring& soundName);
         static void EraseSound(const std::wstring& soundName);

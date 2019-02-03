@@ -208,9 +208,11 @@ int main()
     window.setFramerateLimit(gs::framerateLimit);
     window.setVerticalSyncEnabled(gs::isVerticalSyncEnabled);
     
+#ifdef _WIN32
     sf::Image icon;
-    if (icon.loadFromFile(resourcePath() + "Data/Images/icon.png"))
+    if (icon.loadFromFile(resourcePath() + "Data/Images/icon.jpg"))
         window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
+#endif
 
     
     
@@ -238,7 +240,7 @@ int main()
     ///----------------------------------------------------------
     Entity* Shimakaze = system.AddEntity();
     {
-        Shimakaze->AddComponent<EssentialComponents::DebugComponent>("Update 0 build 3");
+        Shimakaze->AddComponent<EssentialComponents::DebugComponent>("Update 0 build 4");
     }
     
     bool displayWindow{ true };
@@ -284,16 +286,18 @@ int main()
             }
         }
         
-        system.Update(clock.restart());
-        
 #ifdef SFML_SYSTEM_IOS
         if (displayWindow)
         {
+            system.Update(clock.restart());
+            
             window.clear();
             system.Draw(&window);
             window.display(); //TODO: Might crash there if app is not running
         }
 #else
+        system.Update(clock.restart());
+        
         window.clear();
         system.Draw(&window);
         window.display();

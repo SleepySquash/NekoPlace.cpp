@@ -164,43 +164,33 @@ namespace ns
                 return returned;
             return filename;
         }
-    }
-}
-
-namespace nss
-{
-    bool Command(const std::string& line, const std::string& command)
-    {
-        bool ReallyFound{ false };
         
-        if (command.length() <= line.length())
+        
+        
+        int atoi(const std::wstring& stringValue)
         {
-            bool Found{ true };
-            for (int i = 0; Found && i < command.length(); i++)
-                Found = (line[i] == command[i]);
+            std::string parsingString = "";
+            for (int i = 0; stringValue[i] != '\0'; i++)
+                if ((stringValue[i] >= 48 && stringValue[i] <= 57) || stringValue[i] == 45)
+                    parsingString += (char)stringValue[i];
             
-            ReallyFound = Found;
+            return std::atoi(parsingString.c_str());
         }
-        
-        return ReallyFound;
-    }
-    
-    std::string ParseUntil(std::string line, const char until, unsigned int from)
-    {
-        unsigned int pos{ from };
-        std::string text = "";
-        bool Found{ false };
-        
-        while (!Found && pos < line.length())
+        float atof(const std::wstring& stringValue)
         {
-            if (!(Found = (line[pos] == until)))
-            {
-                if (line[pos] != 13)
-                    text += line[pos];
-                pos++;
-            }
+            std::string parsingString = "";
+            for (int i = 0; stringValue[i] != '\0'; i++)
+                if ((stringValue[i] >= 48 && stringValue[i] <= 57) || stringValue[i] == 44 || stringValue[i] == 46 || stringValue[i] == '-')
+                    parsingString += (char)stringValue[i];
+            
+            return std::atof(parsingString.c_str());
         }
-        
-        return text;
+        bool atob(const std::wstring& stringValue)
+        {
+            if (stringValue == L"true" || stringValue == L"True" || stringValue == L"T" || stringValue == L"истина" || stringValue == L"1")
+                return true;
+            else
+                return false;
+        }
     }
 }
