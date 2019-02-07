@@ -155,6 +155,8 @@ namespace NekoNinja
     
     void MainMenu::Init()
     {
+        Player::self->Init();
+        
         sf::Texture* texture = ic::LoadTexture(L"Data/Images/MainMenu1.jpg");
         if (texture)
         {

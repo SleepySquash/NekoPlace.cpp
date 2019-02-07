@@ -41,6 +41,7 @@ namespace NekoNinja
     struct Player
     {
         static Player* self;
+        bool inited{ false };
         std::wstring username{ L"Хозяин228" };
         
         unsigned int level{ 1 };
@@ -56,6 +57,7 @@ namespace NekoNinja
         
         Player();
         ~Player();
+        void Init();
         void SaveData();
         void SaveNeko(NekoInfo* info);
         void SaveNekos();

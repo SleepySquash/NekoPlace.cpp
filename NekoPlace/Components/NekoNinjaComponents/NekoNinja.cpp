@@ -31,6 +31,10 @@ namespace NekoNinja
         NekoInfo(L"Coconut",  0.3f, 195, 75, 97, 80),
         NekoInfo(L"Vanilla",  0.1f, 185, 75, 167, 70),
         NekoInfo(L"Chocola",  0.1f, 168, 80, 160, 70),
+        NekoInfo(L"Kanade",  0.06f, 74, 86, 108, 70),
+        NekoInfo(L"Cthulhu",  0.01f, 194, 120, 220, 135),
+        NekoInfo(L"Miho",  0.004f, 80, 92, 125, 130),
+        NekoInfo(L"Darjeeling",  0.001f, 112, 113, 50, 100),
     };
     list<NekoEntity> RoomLibrary::neko;
     
@@ -39,8 +43,16 @@ namespace NekoNinja
     
     
     
-    Player::Player()
+    Player::Player() { }
+    Player::~Player() { SaveData(); }
+    void Player::Init()
     {
+        if (inited) return;
+        
+        settingsPath = base::utf16(documentsPath()) + L"Settings.nekoninja";
+        nekoPath = base::utf16(documentsPath()) + L"Neko.nekoninja";
+        scoresPath = base::utf16(documentsPath()) + L"Progress.nekoninja";
+        
         std::wifstream wif;
 #ifdef _WIN32
         wif.open(settingsPath);
@@ -122,13 +134,12 @@ namespace NekoNinja
         }
         
         for (auto& n : nl::neko) if (n.tamed) rl::neko.emplace_back(&n);
-    }
-    Player::~Player()
-    {
-        SaveData();
+        
+        inited = true;
     }
     void Player::SaveData()
     {
+        if (!inited) Init();
         if (!base::FileExists(settingsPath))
             base::CreateDirectory(base::utf16(documentsPath()));
         
@@ -147,6 +158,7 @@ namespace NekoNinja
     }
     void Player::SaveNeko(NekoInfo* info)
     {
+        if (!inited) Init();
         if (!base::FileExists(settingsPath))
             base::CreateDirectory(base::utf16(documentsPath()));
         
@@ -165,6 +177,7 @@ namespace NekoNinja
     }
     void Player::SaveNekos()
     {
+        if (!inited) Init();
         if (!base::FileExists(settingsPath))
             base::CreateDirectory(base::utf16(documentsPath()));
         
@@ -189,6 +202,7 @@ namespace NekoNinja
     }
     void Player::AddExperience(unsigned int xp)
     {
+        if (!inited) Init();
         exp += xp;
         while (exp >= expNeeded)
         {
@@ -795,6 +809,7 @@ namespace NekoNinja
     }
     void Controller::Init()
     {
+        Player::self->Init();
         sf::Clock clock;
         
         gs::inGame = true;
@@ -999,10 +1014,10 @@ namespace NekoNinja
     }
     void Controller::PollEvent(sf::Event& event)
     {
-        if (event.type == sf::Event::LostFocus)
-        {
-            if (gs::pauseOnFocusLost && !isGameOver) gs::isPause = true;
-        }
+#if defined(SFML_SYSTEM_IOS) || defined(SFML_SYSTEM_ANDROID)
+        if (event.type == sf::Event::MouseLeft) if (gs::pauseOnFocusLost && !isGameOver) gs::isPause = true;
+#endif
+        if (event.type == sf::Event::LostFocus) { if (gs::pauseOnFocusLost && !isGameOver) gs::isPause = true; }
         else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Key::K)
         {
             ApplyDifficulty(++currentDifficulty);

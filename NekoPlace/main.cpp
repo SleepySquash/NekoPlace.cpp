@@ -23,8 +23,17 @@
     #endif
 #endif
 
+#include <SFML/System.hpp>
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
+
+#ifdef SFML_SYSTEM_ANDROID
+    #include <jni.h>
+    #include <android/native_activity.h>
+    #include <android/log.h>
+    #define LOGE(...) ((void)__android_log_print(ANDROID_LOG_INFO, "sfml-activity", __VA_ARGS__))
+    #include <SFML/System/NativeActivity.hpp>
+#endif
 
 #include "Essentials/ResourcePath.hpp"
 #include "Essentials/Base.hpp"
@@ -179,6 +188,11 @@ void SetResolutionClass()
 
 
 
+#if defined(SFML_SYSTEM_ANDROID)
+    char* androidFilesPath = new char[255];
+    std::string documentsPath() { return std::string(androidFilesPath); }
+#endif
+
 int main()
 {
 #ifdef _WIN32
@@ -187,14 +201,10 @@ int main()
     
     sf::ContextSettings settings;
     settings.antialiasingLevel = 0;
-#ifdef SFML_SYSTEM_IOS
+#if defined(SFML_SYSTEM_IOS) || defined(SFML_SYSTEM_ANDROID)
     sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "NekoPlace", sf::Style::Default);
 #else
-    #ifdef SFML_SYSTEM_ANDROID
-        sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "NekoPlace", sf::Style::Default);
-    #else
-        sf::RenderWindow window(sf::VideoMode(sf::VideoMode::getDesktopMode().width >= 1280 ? 1280 : sf::VideoMode::getDesktopMode().width, sf::VideoMode::getDesktopMode().height >= 880 ? 800 : sf::VideoMode::getDesktopMode().height - 80), "NekoPlace", sf::Style::Default, settings);
-    #endif
+    sf::RenderWindow window(sf::VideoMode(sf::VideoMode::getDesktopMode().width >= 1280 ? 1280 : sf::VideoMode::getDesktopMode().width, sf::VideoMode::getDesktopMode().height >= 880 ? 800 : sf::VideoMode::getDesktopMode().height - 80), "NekoPlace", sf::Style::Default, settings);
 #endif
     gs::window = &window;
     gs::width = window.getSize().x;
@@ -213,9 +223,15 @@ int main()
     if (icon.loadFromFile(resourcePath() + "Data/Images/icon.jpg"))
         window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 #endif
-
     
     
+    
+#if defined(SFML_SYSTEM_ANDROID)
+    const char* androidFilesPath1 = sf::getNativeActivity()->internalDataPath;
+    int i; for (i = 0; androidFilesPath1[i] != '\0'; ++i) androidFilesPath[i] = androidFilesPath1[i];
+    androidFilesPath[i++] = '/'; androidFilesPath[i] = '\0';
+    LOGE("InternalDataPath: %s", androidFilesPath);
+#endif
     
     EntitySystem system;
     srand((unsigned int)time(nullptr));
@@ -240,22 +256,44 @@ int main()
     ///----------------------------------------------------------
     Entity* Shimakaze = system.AddEntity();
     {
-        Shimakaze->AddComponent<EssentialComponents::DebugComponent>("Update 0 build 4");
+        Shimakaze->AddComponent<EssentialComponents::DebugComponent>("Update 0 build 5");
     }
     
-    bool displayWindow{ true };
+    bool active{ true };
     sf::Clock clock;
+#if defined(SFML_SYSTEM_IOS)
     window.setActive();
+#endif
     while (window.isOpen())
     {
         sf::Event event;
-        while (window.pollEvent(event))
+        while (active ? window.pollEvent(event) : window.waitEvent(event))
         {
             switch (event.type)
             {
                 case sf::Event::Closed: window.close(); break;
-                case sf::Event::GainedFocus: displayWindow = true; window.setFramerateLimit(gs::framerateLimit); break;
-                case sf::Event::LostFocus: displayWindow = false; system.PollEvent(event); window.setFramerateLimit(gs::framerateNoFocus); break;
+                case sf::Event::GainedFocus: active = true; clock.restart(); window.setFramerateLimit(gs::framerateLimit);
+#ifdef SFML_SYSTEM_ANDROID
+                    window.setActive();
+#endif
+                    break;
+                case sf::Event::LostFocus: active = false; system.PollEvent(event); window.setFramerateLimit(gs::framerateNoFocus);
+#ifdef SFML_SYSTEM_ANDROID
+                    window.setActive(false);
+#endif
+                    break;
+#if defined(SFML_SYSTEM_IOS) || defined(SFML_SYSTEM_ANDROID)
+                case sf::Event::MouseEntered: active = true; clock.restart(); window.setFramerateLimit(gs::framerateLimit);
+#ifdef SFML_SYSTEM_ANDROID
+                    window.setActive();
+#endif
+                    break;
+                case sf::Event::MouseLeft: active = false; system.PollEvent(event); window.setFramerateLimit(gs::framerateNoFocus);
+#ifdef SFML_SYSTEM_ANDROID
+                    window.setActive(false);
+#endif
+                    break;
+#endif
                     
                 case sf::Event::TouchEnded:
                 case sf::Event::TouchMoved:
@@ -274,7 +312,7 @@ int main()
                     }
                     break;
                     
-                case sf::Event::Resized:
+                case sf::Event::Resized: cout << "Resized " << event.size.width << " " << event.size.height << endl;
                     gs::width = event.size.width;
                     gs::height = event.size.height;
                     CalculateScaleRatios(event.size.width, event.size.height);
@@ -286,15 +324,15 @@ int main()
             }
         }
         
-#ifdef SFML_SYSTEM_IOS
-        if (displayWindow)
+#if defined(SFML_SYSTEM_IOS) || defined(SFML_SYSTEM_ANDROID)
+        if (active)
         {
             system.Update(clock.restart());
             
             window.clear();
             system.Draw(&window);
             window.display(); //TODO: Might crash there if app is not running
-        }
+        } else sf::sleep(sf::milliseconds(100));
 #else
         system.Update(clock.restart());
         

@@ -457,12 +457,12 @@
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include/,
 					"$(inherited)",
-					/Users/mayday/Documents/Libraries/SFML/include/,
+					/Users/mayday/Developer/Libraries/SFML/include/,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"/Users/mayday/Documents/Libraries/SFML/extlibs/libs-ios/",
-					/Users/mayday/Documents/Libraries/SFML/build/ios/lib/Debug/,
+					"/Users/mayday/Developer/Libraries/SFML/extlibs/libs-ios/",
+					/Users/mayday/Developer/Libraries/SFML/build/ios/lib/Debug/,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_LDFLAGS = (
@@ -502,12 +502,12 @@
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include/,
 					"$(inherited)",
-					/Users/mayday/Documents/Libraries/SFML/include/,
+					/Users/mayday/Developer/Libraries/SFML/include/,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"/Users/mayday/Documents/Libraries/SFML/extlibs/libs-ios/",
-					/Users/mayday/Documents/Libraries/SFML/build/ios/lib/Debug/,
+					"/Users/mayday/Developer/Libraries/SFML/extlibs/libs-ios/",
+					/Users/mayday/Developer/Libraries/SFML/build/ios/lib/Debug/,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_LDFLAGS = (

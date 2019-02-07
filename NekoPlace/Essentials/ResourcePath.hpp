@@ -52,9 +52,28 @@
         return L"";
     }
 #else
-    std::string resourcePath(void);
-    std::wstring executablePath(void);
-    std::string documentsPath(void);
+    #ifdef SFML_SYSTEM_ANDROID
+        #include <jni.h>
+        #include <android/native_activity.h>
+        #include <android/log.h>
+        #define LOGE(...) ((void)__android_log_print(ANDROID_LOG_INFO, "sfml-activity", __VA_ARGS__))
+        #include <SFML/System/NativeActivity.hpp>
+
+        std::string documentsPath();
+        std::string apkPath();
+        inline std::string resourcePath()
+        {
+            return "";
+        }
+        inline std::wstring executablePath()
+        {
+            return L"";
+        }
+    #else
+        std::string resourcePath(void);
+        std::wstring executablePath(void);
+        std::string documentsPath(void);
+    #endif
 #endif
 
 #endif

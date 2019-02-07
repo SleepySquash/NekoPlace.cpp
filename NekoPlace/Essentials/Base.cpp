@@ -51,6 +51,35 @@ namespace ns
         
         bool FileExists(const std::wstring& path)
         {
+#ifdef __ANDROID__
+            if (path.length() != 0)
+            {
+                if (path[0] == L'/') return access( utf8(path).c_str(), F_OK ) != -1;
+                else {
+                    LOGE("FileExists looking for: %s", (apkPath() + utf8(path)).c_str());
+                    //return access( (apkPath() + utf8(path)).c_str(), F_OK ) != -1;
+                    
+                    ANativeActivity* activity = sf::getNativeActivity();
+                    JNIEnv* lJNIEnv = NULL;
+                    (activity->vm)->AttachCurrentThread(&lJNIEnv, 0);
+                    
+                    // Retrieve the NativeActivity
+                    jobject ObjectNativeActivity = activity->clazz;
+                    jclass ClassNativeActivity = lJNIEnv->GetObjectClass(ObjectNativeActivity);
+                    
+                    // Retrieve the ActivityInfo
+                    jmethodID MethodGetAssetManager = lJNIEnv->GetMethodID(ClassNativeActivity, "getAssets", "()Landroid/content/res/AssetManager;");
+                    jobject ObjectAssetManager = lJNIEnv->CallObjectMethod(ObjectNativeActivity, MethodGetAssetManager);
+                    
+                    AAssetManager* mgr = AAssetManager_fromJava(lJNIEnv, ObjectAssetManager);
+                    AAsset* asset = AAssetManager_open(mgr, (utf8(path)).c_str(), AASSET_MODE_UNKNOWN);
+                    
+                    (activity->vm)->DetachCurrentThread();
+                    return (asset != nullptr);
+                }
+            }
+#endif
+            
 #ifdef _WIN32
             return _waccess_s(path.c_str(), 0) == 0;
 #else
@@ -99,7 +128,7 @@ namespace ns
                 case ENOENT:
                     // parent didn't exist, try to create it
                     {
-                        int pos = path.find_last_of('/');
+                        unsigned long pos = path.find_last_of('/');
                         if (pos == std::string::npos)
     #ifdef _WIN32
                             pos = path.find_last_of('\\');
@@ -134,9 +163,12 @@ namespace ns
             
             int pos{ -1 };
             if (path.length() != 0)
-                for (unsigned int i = path.length() - 1; i >= 0 && pos == -1; i--)
+                for (unsigned long i = path.length() - 1; i >= 0 && pos == -1; i--)
+                {
                     if (path[i] == '/' || path[i] == '\\')
                         pos = i;
+                    if (i == 0) break;
+                }
             
             for (int i = 0; i <= pos; i++)
                 folder += path[i];
@@ -145,13 +177,16 @@ namespace ns
         }
         std::wstring GetExtentionFromString(std::wstring filename)
         {
-            for (int i = filename.size(); i >= 0; --i)
+            for (unsigned long i = filename.size(); i >= 0; --i)
+            {
                 if (filename[i] == L'.')
                 {
                     if (i != filename.size())
                         filename.erase(0,i);
                     return filename;
                 }
+                if (i == 0) break;
+            }
             return L"";
         }
         std::wstring GetStringWithNoExtention(const std::wstring& filename, const std::wstring& extention)

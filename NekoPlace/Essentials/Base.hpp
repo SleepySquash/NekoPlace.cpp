@@ -15,6 +15,18 @@
 //FileExists
 #include <codecvt>
 #include <sys/stat.h>
+#ifdef SFML_SYSTEM_ANDROID
+    #include <stdio.h>
+    #include "ResourcePath.hpp"
+
+    #include <jni.h>
+    #include <android/native_activity.h>
+    #include <android/asset_manager.h>
+    #include <android/asset_manager_jni.h>
+    #include <android/log.h>
+    #define LOGE(...) ((void)__android_log_print(ANDROID_LOG_INFO, "sfml-activity", __VA_ARGS__))
+    #include <SFML/System/NativeActivity.hpp>
+#endif
 
 namespace ns
 {

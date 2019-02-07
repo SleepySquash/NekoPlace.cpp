@@ -29,19 +29,44 @@
 #include "ResourcePath.hpp"
 
 #ifndef __APPLE__
-#include "Base.hpp"
+    #ifdef SFML_SYSTEM_ANDROID
+        std::string apkPath()
+        {
+            ANativeActivity* activity = sf::getNativeActivity();
+            JNIEnv* env=0;
+            
+            (activity->vm)->AttachCurrentThread(&env, 0);
+            
+            jclass clazz = (env)->GetObjectClass(activity->clazz);
+            jmethodID methodID = (env)->GetMethodID(clazz, "getPackageCodePath", "()Ljava/lang/String;");
+            jobject result = (env)->CallObjectMethod(activity->clazz, methodID);
+            
+            const char* androidAssetsPath1;
+            jboolean isCopy;
+            androidAssetsPath1 = (env)->GetStringUTFChars((jstring)result, &isCopy);
+            
+            std::string androidAssetsPath; int i;
+            for (i = 0; androidAssetsPath1[i] != '\0'; ++i) androidAssetsPath += androidAssetsPath1[i];
+            androidAssetsPath += "/assets/";
+            LOGE("APK Path: %s", androidAssetsPath.c_str());
+            
+            (activity->vm)->DetachCurrentThread();
+            return androidAssetsPath;
+        }
+    #else
+        #include "Base.hpp"
 
-std::string resourcePath(void)
-{
-    return "";
-}
-std::string documentsPath(void)
-{
-    return "";
-}
-std::wstring executablePath(void)
-{
-    return ns::base::GetCurrentWorkingDir();
-}
-
+        std::string resourcePath(void)
+        {
+            return "";
+        }
+        std::string documentsPath(void)
+        {
+            return "";
+        }
+        std::wstring executablePath(void)
+        {
+            return ns::base::GetCurrentWorkingDir();
+        }
+    #endif
 #endif
