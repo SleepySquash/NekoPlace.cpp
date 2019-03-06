@@ -132,6 +132,7 @@ namespace ns
         static float scalex, scaley;
         static unsigned int relativeWidth;
         static unsigned int relativeHeight;
+        static bool verticalOrientation;
         
         static float deltaVelocity;
         
@@ -148,6 +149,15 @@ namespace ns
         static bool isPause;
         static bool pauseOnFocusLost;
         static bool inGame;
+        static bool ignoreEvent;
+        static bool ignoreDraw;
+        
+        static bool isParallaxEnabled;
+        static float defaultParallaxBackground;
+        static float defaultParallaxFar;
+        static float defaultParallaxNormal;
+        static float defaultParallaxClose;
+        static float defaultParallaxFrontground;
         
         static float maxVolumeGlobal;
         static float maxVolumeMusic;

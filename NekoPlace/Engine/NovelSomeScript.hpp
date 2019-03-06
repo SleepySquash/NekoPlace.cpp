@@ -38,6 +38,38 @@ namespace nss
     bool ContainsUsefulInformation(const std::wstring& wstr);
     
     float MathParser(const std::wstring& finalLine);
+    
+    
+    
+    struct CommandSettings
+    {
+        std::wstring line{ L"" };
+        unsigned int lastPos{ 0 };
+        bool keepTheLastPos{ true };
+        bool lowercaseCommand{ true };
+        
+        void Command(std::wstring line);
+        void Step();
+    };
+    
+    bool Command(CommandSettings& results, const std::wstring& command);
+    
+    void SkipSpaces(CommandSettings& results);
+    std::wstring ParseUntil(CommandSettings& results, const wchar_t until);
+    std::wstring ParseWhile(CommandSettings& results, const wchar_t until);
+    
+    std::wstring ParseAsQuoteString(CommandSettings& results);
+    std::wstring ParseAsMaybeQuoteString(CommandSettings& results);
+    
+    std::wstring ParseArgument(CommandSettings& results);
+    void ParseArguments(CommandSettings& results, std::vector<std::wstring>& vec);
+    std::wstring ArgumentAsString(CommandSettings& results);
+    std::wstring ArgumentAsStringWOLowerCase(CommandSettings& results);
+    bool ArgumentAsBool(CommandSettings& results);
+    float ArgumentAsFloat(CommandSettings& results);
+    int ArgumentAsInt(CommandSettings& results);
+    
+    std::wstring GetStringWithLineBreaks(sf::Text& text, const std::wstring& line, unsigned int width, int shift = 0);
 }
 
 #endif /* NovelSomeScript_hpp */

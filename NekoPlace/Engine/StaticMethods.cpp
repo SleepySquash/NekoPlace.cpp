@@ -75,7 +75,6 @@ namespace ns
     //////////////////////////////////////////
     std::wstring PathWithResolutionDetermination(const std::wstring& imageName, unsigned int mode)
     {
-        
         std::wstring fullPath = sf::String(resourcePath()) + imageName;
         if (mode != 0 && !base::FileExists(fullPath))
         {
@@ -243,14 +242,13 @@ namespace ns
                 
                 return nullptr;
             }
-            
             std::wstring fullPath = PathWithResolutionDetermination(imageName, mode);
             
             if (base::FileExists(fullPath))
             {
                 sf::Image* image = new sf::Image();
                 bool imageLoaded{ false };
-    #ifdef _WIN32
+#ifdef _WIN32
                 std::ifstream ifStream(fullPath, std::ios::binary | std::ios::ate);
                 if (!ifStream.is_open())
                     std::cerr << "Unable to open file: " << base::utf8(fullPath) << std::endl;
@@ -265,10 +263,34 @@ namespace ns
                     imageLoaded = image->loadFromMemory(fileInMemory, filesize);
                     delete[] fileInMemory;
                 }
-    #else
-                if (!(imageLoaded = image->loadFromFile(base::utf8(fullPath))))
-                    std::cerr << "Unable to open file: " << base::utf8(fullPath) << std::endl;
-    #endif
+#else
+#ifdef SFML_SYSTEM_ANDROID
+                if (fullPath[0] == L'/')
+                {
+                    std::ifstream ifStream(base::utf8(fullPath), std::ios::binary | std::ios::ate);
+                    if (!ifStream.is_open())
+                        std::cerr << "Unable to open file: " << base::utf8(fullPath) << std::endl;
+                    else
+                    {
+                        auto filesize = ifStream.tellg();
+                        char* fileInMemory = new char[static_cast<unsigned int>(filesize)];
+                        ifStream.seekg(0, std::ios::beg);
+                        ifStream.read(fileInMemory, filesize);
+                        ifStream.close();
+                        
+                        imageLoaded = image->loadFromMemory(fileInMemory, filesize);
+                        delete[] fileInMemory;
+                    }
+                }
+                else
+                {
+#endif
+                    if (!(imageLoaded = image->loadFromFile(base::utf8(fullPath))))
+                        std::cerr << "Unable to open file: " << base::utf8(fullPath) << std::endl;
+#ifdef SFML_SYSTEM_ANDROID
+                }
+#endif
+#endif
                 
                 if (imageLoaded)
                 {
@@ -287,7 +309,7 @@ namespace ns
         {
             sf::Image* image = new sf::Image();
             bool imageLoaded{ false };
-    #ifdef _WIN32
+#ifdef _WIN32
             std::ifstream ifStream(fullPath, std::ios::binary | std::ios::ate);
             if (!ifStream.is_open())
                 std::cerr << "Unable to open file: " << base::utf8(fullPath) << std::endl;
@@ -302,10 +324,34 @@ namespace ns
                 imageLoaded = image->loadFromMemory(fileInMemory, filesize);
                 delete[] fileInMemory;
             }
-    #else
-            if (!(imageLoaded = image->loadFromFile(base::utf8(fullPath))))
-                std::cerr << "Unable to open file: " << base::utf8(fullPath) << std::endl;
-    #endif
+#else
+#ifdef SFML_SYSTEM_ANDROID
+            if (fullPath[0] == L'/')
+            {
+                std::ifstream ifStream(base::utf8(fullPath), std::ios::binary | std::ios::ate);
+                if (!ifStream.is_open())
+                    std::cerr << "Unable to open file: " << base::utf8(fullPath) << std::endl;
+                else
+                {
+                    auto filesize = ifStream.tellg();
+                    char* fileInMemory = new char[static_cast<unsigned int>(filesize)];
+                    ifStream.seekg(0, std::ios::beg);
+                    ifStream.read(fileInMemory, filesize);
+                    ifStream.close();
+                    
+                    imageLoaded = image->loadFromMemory(fileInMemory, filesize);
+                    delete[] fileInMemory;
+                }
+            }
+            else
+            {
+#endif
+                if (!(imageLoaded = image->loadFromFile(base::utf8(fullPath))))
+                    std::cerr << "Unable to open file: " << base::utf8(fullPath) << std::endl;
+#ifdef SFML_SYSTEM_ANDROID
+            }
+#endif
+#endif
             
             if (imageLoaded)
             {
@@ -318,17 +364,8 @@ namespace ns
     void ImageCollector::PreloadImage(const std::wstring& imageName, unsigned int mode, bool destroyable)
     {
         if (images.find(imageName) == images.end())
-        {
-            /*if (threads.find(imageName) != threads.end())
-            {
-                threads[imageName].join();
-                threads.erase(threads.find(imageName));
-                if (images.find(imageName) != images.end() && images[imageName].image != nullptr)
-                    return;
-            }*/
             if (threads.find(imageName) == threads.end())
                 threads.emplace(imageName, std::thread(&ThreadImage, imageName, mode, destroyable, false));
-        }
     }
     sf::Texture* ImageCollector::LoadTexture(const std::wstring& imageName, unsigned int mode)
     {
@@ -339,7 +376,6 @@ namespace ns
             if (images[imageName].image != nullptr)
             {
                 if (usagePlusPlus) ++images[imageName].usage;
-                ///cout << "LoadTexture! images[" << base::utf8(imageName) << "].usage = " << images[imageName].usage << endl;
                 if (images[imageName].texture != nullptr) return images[imageName].texture;
                 
                 images[imageName].texture = new sf::Texture();
@@ -356,20 +392,8 @@ namespace ns
     void ImageCollector::PreloadTexture(const std::wstring& imageName, unsigned int mode, bool destroyable)
     {
         if (images.find(imageName) == images.end())
-        {
-            /*if (threads.find(imageName) != threads.end())
-            {
-                threads[imageName].join();
-                threads.erase(threads.find(imageName));
-                if (images.find(imageName) != images.end() && images[imageName].image != nullptr)
-                {
-                    if (!images[imageName].texture) { LoadTexture(imageName); --images[imageName].usage; }
-                    return;
-                }
-            }*/
             if (threads.find(imageName) == threads.end())
                 threads.emplace(imageName, std::thread(&ThreadImage, imageName, mode, destroyable, true));
-        }
     }
     sf::Image* ImageCollector::FindImage(const std::wstring& imageName)
     {
@@ -393,7 +417,7 @@ namespace ns
     {
         if (images.find(imageName) != images.end())
         {
-            --images[imageName].usage; ///cout << "DeleteImage! images[" << base::utf8(imageName) << "].usage = " << images[imageName].usage << endl;
+            --images[imageName].usage;
             if (images[imageName].usage <= 0 && images[imageName].destroyable)
                 ic::EraseImage(imageName);
         }
@@ -516,6 +540,8 @@ namespace ns
                 delete[] fileInMemory;
             }
 #else
+            //sf::sleep(sf::milliseconds(90)); // ...it crashes w/o it lol (???)
+            cout << base::utf8(fullPath) << endl;
             if (!(soundLoaded = sound->loadFromFile(base::utf8(fullPath))))
                 std::cerr << "Unable to open file: " << base::utf8(fullPath) << std::endl;
 #endif
@@ -592,6 +618,7 @@ namespace ns
     unsigned int gs::relativeHeight = 0;
     float gs::scale = 1.f; float gs::scScale = 1.f;
     float gs::scalex = 1.f; float gs::scaley = 1.f;
+    bool gs::verticalOrientation = false;
     
     float gs::deltaVelocity = 1.f;
     
@@ -612,9 +639,18 @@ namespace ns
     bool gs::isPause = false;
     bool gs::pauseOnFocusLost = true;
     bool gs::inGame = false;
+    bool gs::ignoreEvent = false;
+    bool gs::ignoreDraw = false;
     
     float gs::maxVolumeGlobal = 1.f;
     float gs::maxVolumeMusic = 1.f;
     float gs::maxVolumeAmbeint = 1.f;
     float gs::maxVolumeSound = 1.f;
+    
+    bool gs::isParallaxEnabled = false;
+    float gs::defaultParallaxBackground = 0.018;
+    float gs::defaultParallaxFar = 0.032;
+    float gs::defaultParallaxNormal = 0.062;
+    float gs::defaultParallaxClose = 0.105;
+    float gs::defaultParallaxFrontground = 0.13;    
 }

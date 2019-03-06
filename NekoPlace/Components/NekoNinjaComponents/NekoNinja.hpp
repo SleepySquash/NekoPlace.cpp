@@ -23,7 +23,12 @@
 #include "../../Engine/NovelSystem.hpp"
 #include "../../Engine/StaticMethods.hpp"
 #include "../../Engine/GUIInterface.hpp"
-#include "NekoHelpers.hpp"
+
+#include "Player.hpp"
+#include "NekoLibrary.hpp"
+#include "GameplayEffects.hpp"
+#include "NekoNinjaSettings.hpp"
+#include "Popup.hpp"
 
 using std::cin;
 using std::cout;
@@ -37,36 +42,6 @@ using namespace ns;
 
 namespace NekoNinja
 {
-    struct NekoInfo;
-    struct Player
-    {
-        static Player* self;
-        bool inited{ false };
-        std::wstring username{ L"Хозяин228" };
-        
-        unsigned int level{ 1 };
-        unsigned int exp{ 0 };
-        unsigned int expNeeded{ 100 };
-        unsigned int lootboxes{ 0 };
-        
-        float expRatio{ 0 };
-        
-        std::wstring settingsPath{ base::utf16(documentsPath()) + L"Settings.nekoninja" };
-        std::wstring nekoPath{ base::utf16(documentsPath()) + L"Neko.nekoninja" };
-        std::wstring scoresPath{ base::utf16(documentsPath()) + L"Progress.nekoninja" };
-        
-        Player();
-        ~Player();
-        void Init();
-        void SaveData();
-        void SaveNeko(NekoInfo* info);
-        void SaveNekos();
-        void AddExperience(unsigned int xp);
-    };
-    
-
-
-
     struct SceneBackground : Component
     {
         sf::Sprite sprite;
@@ -80,67 +55,6 @@ namespace NekoNinja
         void Resize(unsigned int width, unsigned int height) override;
         void Draw(sf::RenderWindow* window) override;
     };
-    
-    
-    
-    struct NekoInfo
-    {
-        std::wstring name{ L"" };
-        float chance{ 0.f };
-        sf::Color color;
-        sf::IntRect offsets;
-        
-        bool tamed{ false };
-        unsigned int level{ 1 };
-        
-        NekoInfo() { }
-        NekoInfo(const std::wstring& name, const float& chance, int l = 15, int t = 15, int w = 15, int h = 15, bool tamed = false, const sf::Color& ocolor = sf::Color::Transparent) : name(name), chance(chance), offsets(l, t, w, h), tamed(tamed), color(ocolor)
-        {
-            if (ocolor == sf::Color::Transparent)
-            {
-                if (chance >= 0.25)         color = sf::Color(200, 200, 200, 120);
-                else if (chance >= 0.09)    color = sf::Color(106, 143, 203, 255);
-                else if (chance >= 0.04)    color = sf::Color(87, 173, 98, 255);
-                else if (chance >= 0.01)    color = sf::Color(218, 113, 114, 255);
-                else if (chance >= 0.005)   color = sf::Color(188, 106, 167, 255);
-                else                        color = sf::Color(149, 192, 95, 255);
-            }
-        }
-    };
-    struct NekoLibrary
-    {
-        static vector<NekoInfo> neko;
-    };
-    struct NekoEntity
-    {
-        sf::Sprite sprite;
-        bool spriteLoaded{ false };
-        NekoInfo* info{ nullptr };
-        
-        bool inited{ false };
-        float x{ 0 }, y{ 0 };
-        
-        bool moveRight{ false }, moveLeft{ false }, moveDown{ false }, moveUp{ false };
-        float xSpd{ 140 }, ySpd{ 140 };
-        
-        float movingTo_x{ 0 }, movingTo_y{ 0 };
-        bool newPoint{ true };
-        float elapsedWaiting{ 0 }, waitingTime{ 1.2f };
-        
-        NekoEntity(NekoInfo* info) : info(info) { }
-        void Init();
-        void Destroy();
-        void Update(const sf::Time& elapsedTime);
-        void PollEvent(sf::Event& event);
-        void Resize();
-        void Draw(sf::RenderWindow* window);
-    };
-    struct RoomLibrary
-    {
-        static list<NekoEntity> neko;
-    };
-    typedef NekoLibrary nl;
-    typedef RoomLibrary rl;
     
     
     
@@ -158,9 +72,14 @@ namespace NekoNinja
         sf::Text pauseText;
         
         sf::Text scoreText;
+        sf::Text strikeText;
         sf::Sprite pauseSprite;
         sf::Sprite heartSprite;
         sf::Sprite handSprite;
+        
+        sf::RectangleShape nekoButShape, nekoCooldownShape;
+        sf::Text nekoButText;
+        GUI::SpriteButton nekoButton;
         
         bool drawResults{ true }, drawNewNeko{ false };
         sf::Text resultsText;
@@ -180,8 +99,9 @@ namespace NekoNinja
         
         float heartsXX{ 0 };
         
+        bool scoresAlreadyColored{ false };
         bool newNekoAvailable{ false };
-        list<NekoInfo*> newNekoList;
+        list<NekoBase*> newNekoList;
         sf::RectangleShape newNekoShape, newNekoLine;
         sf::Sprite newNekoSprite;
         
@@ -217,7 +137,7 @@ namespace NekoNinja
         int halfTheWidth{ 0 };
         sf::Sprite sprite;
         sf::Sound sound;
-        NekoInfo* nekoInfo{ nullptr };
+        NekoBase* nekoInfo{ nullptr };
         
         void Init();
         void Destroy();
@@ -227,6 +147,13 @@ namespace NekoNinja
         void Draw(sf::RenderWindow* window);
     };
     
+    struct ControllerSettings
+    {
+        std::wstring backgroundImage;
+        int difficulty;
+        
+        ControllerSettings(const int& difficulty = 0, const std::wstring& backgroundImage = L"Data/Images/park.jpg") : difficulty(difficulty), backgroundImage(backgroundImage) { }
+    };
     struct Controller : Component
     {
         ///////////////
@@ -262,25 +189,25 @@ namespace NekoNinja
         float harderElapsedTime{ 0.f }, getHarderTime{ 36.f };
         std::wstring backgroundImage{ L"Data/Images/park.jpg" };
         float criticalHitPossibility{ 0.01f }, eventPossibility{ 0.35f };
-        float nekoScale{ 1.f };
-        static float scoreMultiplier;
+        float nekoScale{ 1.f };//, timeMultiplier{ 1.f };
         
         bool eventIsUp{ false };
         
-        float attackingElapsedTime{ 0.f }, attackingAreaTime{ 0.45f };
+        float attackingElapsedTime{ 0.f }, attackingAreaTime{ 0.5f };
         bool attackIsDone{ true };
         int attackType{ 0 }, attackCount{ 0 };
         
-        bool spawnNekos{ true };
-        bool isGameOver{ false };
-        bool needsInit{ true };
+        bool spawnNekos{ true }, isGameOver{ false }, needsInit{ true };
+        AbilityBase* ability{ nullptr }; bool abilityIsUp{ false };
+        float abilityElapsedCooldown{ 0.f }, lastTouchedMoment{ 0.f };
+        bool countdownLastTouchedMoment{ false };
         
         float elapsedCombo{ 0.f }, comboThreshold{ 0.07f };
         int comboCounter{ 0 };
         sf::Vector2f lastNekoPosition;
         
         float elapsedSeconds{ 0.9f }, nextAttackTime{ 2.f }, baseAttackTime{ 1.2f }, randomAttackTime{ 1.2f };
-        unsigned int score{ 0 }, topScore{ 0 }, lifes{ 3 }, maxlifes{ 3 };
+        unsigned int score{ 0 }, lifes{ 3 }, maxlifes{ 3 }, strike{ 0 }, maxStrike{ 0 };
         unsigned int lifeScore{ 1000 };
         
         sf::Vector2i startPoint{ 0, 0 }, endPoint{ 0, 0 };
@@ -289,9 +216,10 @@ namespace NekoNinja
         float elapsedCursor{ 0.f };
         sf::Vertex line[2];
         
-        Controller(bool needsInit = true) : needsInit(needsInit) { }
+        Controller(const ControllerSettings& settings = ControllerSettings());
         void Destroy() override;
         void Init() override;
+        void ApplyGameSettings();
         void Update(const sf::Time& elapsedTime) override;
         void Resize(unsigned int width, unsigned int height) override;
         void Draw(sf::RenderWindow* window) override;

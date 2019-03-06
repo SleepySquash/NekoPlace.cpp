@@ -6,7 +6,7 @@
 //  Copyright © 2019 Melanholy Hill. All rights reserved.
 //
 
-#include "NekoHelpers.hpp"
+#include "GameplayEffects.hpp"
 
 namespace NekoNinja
 {
@@ -32,10 +32,7 @@ namespace NekoNinja
             else sprite.setColor(sf::Color(255, 255, 255, alpha));
         }
     }
-    void HeartsShape::Draw(sf::RenderWindow* window)
-    {
-        window->draw(sprite);
-    }
+    void HeartsShape::Draw(sf::RenderWindow* window) { window->draw(sprite); }
     
     
     
@@ -73,10 +70,7 @@ namespace NekoNinja
             }
         }
     }
-    void ComboText::Draw(sf::RenderWindow* window)
-    {
-        if (fontLoaded) window->draw(text);
-    }
+    void ComboText::Draw(sf::RenderWindow* window) { if (fontLoaded) window->draw(text); }
     
     
     CriticalHitText::CriticalHitText(float x, float y)
@@ -113,8 +107,5 @@ namespace NekoNinja
             }
         }
     }
-    void CriticalHitText::Draw(sf::RenderWindow* window)
-    {
-        if (fontLoaded) window->draw(text);
-    }
+    void CriticalHitText::Draw(sf::RenderWindow* window) { if (fontLoaded) window->draw(text); }
 }

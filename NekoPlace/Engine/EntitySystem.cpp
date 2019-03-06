@@ -10,12 +10,14 @@
 
 namespace ns
 {
+    MessageHolder::MessageHolder() { }
     Component::~Component() { }
     void Component::Init() { }
     void Component::Update(const sf::Time&) { }
     void Component::Draw(sf::RenderWindow*) { }
     void Component::Resize(unsigned int, unsigned int) { }
     void Component::PollEvent(sf::Event&) { }
+    void Component::RecieveMessage(MessageHolder&) { }
     void Component::Destroy() { }
     void Component::SetEntity(Entity* entity) { this->entity = entity; }
     Entity* Component::GetEntity() { return entity; }
@@ -61,6 +63,13 @@ namespace ns
         list<Component*>::iterator it = components.begin();
         while (it != components.end()) { (*it)->Destroy(); delete (*it); components.erase(it++); }
     }
+    void Entity::SendMessage(MessageHolder message) { Entity::RecieveMessage(message); }
+    void Entity::RecieveMessage(MessageHolder& message)
+    {
+        if (components.size())
+            for (auto e : components)
+                if (!e->offline) e->RecieveMessage(message);
+    }
     void Entity::SetEntitySystem(EntitySystem* system) { this->system = system; }
     
     
@@ -68,27 +77,30 @@ namespace ns
     EntitySystem::EntitySystem() { }
     void EntitySystem::Update(const sf::Time& elapsedTime)
     {
-        if (entities.size())
-            for (auto e : entities)
-                e->Update(elapsedTime);
+        list<Entity*>::iterator it = entities.begin();
+        while (it != entities.end())
+        {
+            if ((*it)->offline) { delete (*it); entities.erase(it++); }
+            else { (*it)->Update(elapsedTime); ++it; }
+        }
     }
     void EntitySystem::Draw(sf::RenderWindow* window)
     {
         if (entities.size())
             for (auto e : entities)
-                e->Draw(window);
+                if (!e->offline) e->Draw(window);
     }
     void EntitySystem::Resize(unsigned int width, unsigned int height)
     {
         if (entities.size())
             for (auto e : entities)
-                e->Resize(width, height);
+                if (!e->offline) e->Resize(width, height);
     }
     void EntitySystem::PollEvent(sf::Event& event)
     {
         if (entities.size())
             for (auto e : entities)
-                e->PollEvent(event);
+                if (!e->offline) e->PollEvent(event);
     }
     Entity* EntitySystem::AddEntity()
     {
@@ -98,13 +110,21 @@ namespace ns
     }
     void EntitySystem::PopEntity(Entity* entity)
     {
-        std::list<Entity*>::iterator it = std::find(entities.begin(), entities.end(), entity);
-        if (it != entities.end())
-        {
-            (*it)->Destroy();
-            delete (*it);
-            entities.erase(it);
-        }
+        entity->offline = true;
+        entity->Destroy();
+        /*std::list<Entity*>::iterator it = std::find(entities.begin(), entities.end(), entity);
+         if (it != entities.end())
+         {
+         (*it)->Destroy();
+         delete (*it);
+         entities.erase(it);
+         }*/
+    }
+    void EntitySystem::SendMessage(MessageHolder message)
+    {
+        if (entities.size())
+            for (auto e : entities)
+                if (!e->offline) e->RecieveMessage(message);
     }
     void EntitySystem::clear()
     {

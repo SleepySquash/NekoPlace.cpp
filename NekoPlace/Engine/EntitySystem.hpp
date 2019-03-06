@@ -21,13 +21,21 @@ using std::list;
 
 namespace ns
 {
-    class Component;
-    class Entity;
-    class EntitySystem;
+    struct Component;
+    struct Entity;
+    struct EntitySystem;
     
-    class Component
+    struct MessageHolder
     {
-    public:
+        std::string info;
+        std::wstring path;
+        
+        MessageHolder();
+        MessageHolder(const std::string& info, const std::wstring& path = L"") : info(info), path(path) { }
+    };
+    
+    struct Component
+    {
         Entity* entity{ nullptr };
         bool offline{ false };
         int priority{ 0 };
@@ -38,16 +46,17 @@ namespace ns
         virtual void Draw(sf::RenderWindow*);
         virtual void Resize(unsigned int width, unsigned int height);
         virtual void PollEvent(sf::Event& event);
+        virtual void RecieveMessage(MessageHolder& message);
         virtual void Destroy();
         void SetPriority(int priority);
         void SetEntity(Entity* entity);
         Entity* GetEntity();
     };
     
-    class Entity
+    struct Entity
     {
-    public:
         EntitySystem* system{ nullptr };
+        bool offline{ false };
         list<Component*> components;
         
         Entity();
@@ -57,6 +66,8 @@ namespace ns
         void Resize(unsigned int width, unsigned int height);
         void PollEvent(sf::Event& event);
         void PopComponent(Component* component);
+        void SendMessage(MessageHolder message);
+        void RecieveMessage(MessageHolder& message);
         void Destroy();
         void SetEntitySystem(EntitySystem* system);
         template<typename T, typename ...Args> T* AddComponent(Args... args)
@@ -93,9 +104,8 @@ namespace ns
         }
     };
     
-    class EntitySystem
+    struct EntitySystem
     {
-    public:
         list<Entity*> entities;
         
         EntitySystem();
@@ -105,6 +115,7 @@ namespace ns
         void PollEvent(sf::Event& event);
         Entity* AddEntity();
         void PopEntity(Entity* entity);
+        void SendMessage(MessageHolder message);
         void clear();
     };
 }

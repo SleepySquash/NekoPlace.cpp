@@ -22,11 +22,6 @@
         #include <SFML/Main.hpp>
     #endif
 #endif
-
-#include <SFML/System.hpp>
-#include <SFML/Audio.hpp>
-#include <SFML/Graphics.hpp>
-
 #ifdef SFML_SYSTEM_ANDROID
     #include <jni.h>
     #include <android/native_activity.h>
@@ -35,6 +30,10 @@
     #include <SFML/System/NativeActivity.hpp>
 #endif
 
+#include <SFML/System.hpp>
+#include <SFML/Audio.hpp>
+#include <SFML/Graphics.hpp>
+
 #include "Essentials/ResourcePath.hpp"
 #include "Essentials/Base.hpp"
 #include "Engine/StaticMethods.hpp"
@@ -42,7 +41,7 @@
 
 #include "Components/EssentialComponents.hpp"
 #include "Components/NekoNinjaComponents/NekoNinja.hpp"
-#include "Components/NekoNinjaComponents/NekoMenu.hpp"
+#include "Components/NekoNinjaComponents/MainMenu.hpp"
 
 using std::cout;
 using std::cin;
@@ -59,6 +58,7 @@ void CalculateScaleRatios(unsigned int width, unsigned int height)
     
     float ratioFactorX = (float)width/(float)height;
     float ratioFactorY = (float)height/(float)width;
+    gs::verticalOrientation = ratioFactorX < 1.23;
     
     gs::scale = factorX > factorY ? factorX : factorY;
     gs::scScale = gs::scale;
@@ -193,7 +193,11 @@ void SetResolutionClass()
     std::string documentsPath() { return std::string(androidFilesPath); }
 #endif
 
+#ifdef _MSC_VER
+int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
+#else
 int main()
+#endif
 {
 #ifdef _WIN32
     std::system("chcp 1251");
@@ -223,8 +227,6 @@ int main()
     if (icon.loadFromFile(resourcePath() + "Data/Images/icon.jpg"))
         window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 #endif
-    
-    
     
 #if defined(SFML_SYSTEM_ANDROID)
     const char* androidFilesPath1 = sf::getNativeActivity()->internalDataPath;
@@ -256,7 +258,7 @@ int main()
     ///----------------------------------------------------------
     Entity* Shimakaze = system.AddEntity();
     {
-        Shimakaze->AddComponent<EssentialComponents::DebugComponent>("Update 0 build 5");
+        Shimakaze->AddComponent<EssentialComponents::DebugComponent>("Update 0 build 7");
     }
     
     bool active{ true };
@@ -295,6 +297,7 @@ int main()
                     break;
 #endif
                     
+                case sf::Event::MouseWheelScrolled:
                 case sf::Event::TouchEnded:
                 case sf::Event::TouchMoved:
                 case sf::Event::TouchBegan:
@@ -312,7 +315,7 @@ int main()
                     }
                     break;
                     
-                case sf::Event::Resized: cout << "Resized " << event.size.width << " " << event.size.height << endl;
+                case sf::Event::Resized:
                     gs::width = event.size.width;
                     gs::height = event.size.height;
                     CalculateScaleRatios(event.size.width, event.size.height);

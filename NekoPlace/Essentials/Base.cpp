@@ -54,11 +54,8 @@ namespace ns
 #ifdef __ANDROID__
             if (path.length() != 0)
             {
-                if (path[0] == L'/') return access( utf8(path).c_str(), F_OK ) != -1;
-                else {
-                    LOGE("FileExists looking for: %s", (apkPath() + utf8(path)).c_str());
-                    //return access( (apkPath() + utf8(path)).c_str(), F_OK ) != -1;
-                    
+                if (path[0] != L'/')
+                {
                     ANativeActivity* activity = sf::getNativeActivity();
                     JNIEnv* lJNIEnv = NULL;
                     (activity->vm)->AttachCurrentThread(&lJNIEnv, 0);
@@ -199,6 +196,21 @@ namespace ns
                 return returned;
             return filename;
         }
+        
+        
+        
+        
+        
+        size_t GetLengthWONewLinesAndSpaces(const std::wstring& string)
+        {
+            size_t size = 0, i = 0;
+            while (string[i] != '\0') {
+                if (string[i] != '\n' && string[i] != ' ') size++;
+                ++i; }
+            return size;
+        }
+        
+        
         
         
         
