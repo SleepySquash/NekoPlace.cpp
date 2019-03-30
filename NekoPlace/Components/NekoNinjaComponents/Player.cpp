@@ -48,21 +48,21 @@ namespace NekoNinja
         switch (level)
         {
             case 1: expNeeded = 140; break;
-            case 2: expNeeded = 220; break;
-            case 3: expNeeded = 300; break;
-            case 4: expNeeded = 340; break;
-            case 5: expNeeded = 400; break;
-            case 6: expNeeded = 470; break;
-            case 7: expNeeded = 540; break;
-            case 8: expNeeded = 600; break;
-            case 9: expNeeded = 670; break;
-            case 10: expNeeded = 760; break;
-            case 11: expNeeded = 870; break;
-            case 12: expNeeded = 980; break;
-            case 13: expNeeded = 1100; break;
-            case 14: expNeeded = 1400; break;
-            case 15: expNeeded = 1700; break;
-            default: expNeeded = 2300; break;
+            case 2: expNeeded = 230; break;
+            case 3: expNeeded = 320; break;
+            case 4: expNeeded = 380; break;
+            case 5: expNeeded = 450; break;
+            case 6: expNeeded = 520; break;
+            case 7: expNeeded = 590; break;
+            case 8: expNeeded = 680; break;
+            case 9: expNeeded = 700; break;
+            case 10: expNeeded = 790; break;
+            case 11: expNeeded = 900; break;
+            case 12: expNeeded = 1100; break;
+            case 13: expNeeded = 1300; break;
+            case 14: expNeeded = 1500; break;
+            case 15: expNeeded = 1800; break;
+            default: expNeeded = 2500; break;
         }
         expRatio = (float)exp/expNeeded;
         

@@ -149,8 +149,7 @@ namespace ns
         static bool isPause;
         static bool pauseOnFocusLost;
         static bool inGame;
-        static bool ignoreEvent;
-        static bool ignoreDraw;
+        static bool ignoreEvent, ignoreDraw;
         
         static bool isParallaxEnabled;
         static float defaultParallaxBackground;
