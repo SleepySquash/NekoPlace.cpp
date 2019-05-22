@@ -14,10 +14,11 @@
 #include <SFML/Main.hpp>
 #include <SFML/Graphics.hpp>
 
-#include "../../Engine/EntitySystem.hpp"
-#include "../../Engine/StaticMethods.hpp"
-#include "../../Engine/GUIInterface.hpp"
-#include "../../Engine/NovelSomeScript.hpp"
+#include "../../../Engine/EntitySystem.hpp"
+#include "../../../Engine/Settings.hpp"
+#include "../../../Engine/Collectors/Font.hpp"
+#include "../../../Engine/GUIInterface.hpp"
+#include "../../../Engine/NovelSomeScript.hpp"
 
 using std::cin;
 using std::cout;

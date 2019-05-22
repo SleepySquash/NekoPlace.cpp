@@ -21,12 +21,13 @@
 #include "../../Essentials/ResourcePath.hpp"
 #include "../../Engine/EntitySystem.hpp"
 #include "../../Engine/NovelSystem.hpp"
-#include "../../Engine/StaticMethods.hpp"
+#include "../../Engine/Settings.hpp"
 #include "../../Engine/GUIInterface.hpp"
 
 #include "NekoBase.hpp"
 #include "NekoLibrary.hpp"
 #include "NekoDatabaseCollection.hpp"
+#include "ItemDatabaseCollection.hpp"
 #include "RoomLibrary.hpp"
 
 using std::cin;
@@ -72,6 +73,7 @@ namespace NekoNinja
         void SaveData();
         void SaveNeko(NekoBase* info);
         void SaveNekos();
+        void SaveItems();
         void ResetNekos();
         void AddExperience(unsigned int xp);
     };

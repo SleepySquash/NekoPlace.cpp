@@ -463,6 +463,27 @@ namespace nss
     
     
     
+    
+    int ParseAsInt(CommandSettings& results) { return ns::base::atoi(nss::ParseUntil(results, ' ')); }
+    float ParseAsFloat(CommandSettings& results) { return ns::base::atof(nss::ParseUntil(results, ' ')); }
+    std::wstring ParseAsString(CommandSettings& results)
+    {
+        std::wstring parsedUntil = nss::ParseUntil(results, '\0');
+        //std::wstring stringValue = ns::base::LowercaseTheString(parsedUntil);
+        return parsedUntil;
+    }
+    std::wstring ParseAsStringWOLowercase(CommandSettings& results) { std::wstring parsedUntil = nss::ParseUntil(results, '\0'); return parsedUntil; }
+    bool ParseAsBool(CommandSettings& results)
+    {
+        std::wstring stringValue = nss::ParseAsString(results);
+        if (stringValue == L"true" || stringValue == L"1") return true;
+        else return false;
+    }
+    
+    
+
+    
+    
     std::wstring GetStringWithLineBreaks(sf::Text& text, const std::wstring& line, unsigned int width, int shift)
     {
         sf::Text tempText = text;

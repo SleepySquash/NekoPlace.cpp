@@ -34,15 +34,18 @@ namespace ns
     {
         std::string utf8(const std::wstring& str);
         std::wstring utf16(const std::string& str);
+        std::string utf8(const wchar_t& wchar);
+        std::wstring utf16(const char& wchar);
         
         std::wstring GetCurrentWorkingDir();
         bool FileExists(const std::wstring& path);
-        bool DoesFileExistWithResolutionClass(const std::wstring& currentPath);
         bool CreateDirectory(const std::wstring& path);
         
+        bool DoesFileExistWithResolutionClass(const std::wstring& currentPath);
+        
         std::wstring GetFolderPath(const std::wstring& path);
-        std::wstring GetExtentionFromString(std::wstring filename);
-        std::wstring GetStringWithNoExtention(const std::wstring& filename, const std::wstring& extention);
+        std::wstring GetExtentionFromString(const std::wstring& filename);
+        std::wstring GetStringWithNoExtention(const std::wstring& filename);
         
         size_t GetLengthWONewLinesAndSpaces(const std::wstring& string);
         

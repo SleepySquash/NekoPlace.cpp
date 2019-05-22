@@ -21,7 +21,8 @@
 //#include "../../Essentials/ResourcePath.hpp"
 #include "../../Engine/EntitySystem.hpp"
 #include "../../Engine/NovelSystem.hpp"
-#include "../../Engine/StaticMethods.hpp"
+#include "../../Engine/Settings.hpp"
+#include "../../Engine/Collectors.hpp"
 #include "../../Engine/GUIInterface.hpp"
 
 #include "../NekoNinjaComponents/NekoBase.hpp"
@@ -171,7 +172,7 @@ namespace ns
             sendMessageBackEnum sendMessageBack{ atAppearance };
             modeEnum afterAppearSwitchTo{ existing };
             
-            float scaleX{ 1.f }, scaleY{ 1.f };
+            float scaleX{ 1.f }, scaleY{ 1.f }, relScale{ 1.f };
             
             enum positionEnum { custom, left, cleft, center, cright, right };
             positionEnum position { center };

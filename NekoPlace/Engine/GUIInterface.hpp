@@ -12,7 +12,9 @@
 #include <SFML/Graphics.hpp>
 
 #include "../Essentials/Base.hpp"
-#include "StaticMethods.hpp"
+#include "Settings.hpp"
+#include "Collectors/Font.hpp"
+#include "Collectors/Image.hpp"
 
 namespace ns
 {
@@ -169,6 +171,38 @@ namespace ns
             void setFont(const std::wstring& fontname);
             void setString(const std::wstring& string);
             void setCharacterSize(const unsigned int size);
+        };
+        
+        
+        
+        struct StageButtons : Button
+        {
+            bool fontLoaded{ false };
+            
+            bool anyButtonPressed{ false };
+            unsigned long index{ 0 }, pressedIndex{ 0 };
+            bool onPress{ false };
+            bool ignoreWasPressed{ false };
+            bool characterScale{ false };
+            
+            std::wstring textureName{ L"" };
+            sf::Sprite shape;
+            sf::Text text;
+            unsigned int characterSize{ 20 };
+            float thickness{ 1.f };
+            
+            StageButtons();
+            void Draw(sf::RenderTarget* window) override;
+            void Resize(unsigned int width, unsigned int height) override;
+            bool PollEvent(sf::Event& event) override;
+            void eventPolled(sf::Event& event);
+            void setAlpha(const sf::Int8& alpha) override;
+            void setPosition(float x, float y) override;
+            void setFont(const std::wstring& fontname);
+            void setString(const std::wstring& string);
+            void setCharacterSize(const unsigned int size);
+            void setTexture(const std::wstring& texture);
+            void setTexture(sf::Texture* texture);
         };
     }
 }

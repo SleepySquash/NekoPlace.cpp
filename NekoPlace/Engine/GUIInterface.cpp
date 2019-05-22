@@ -99,7 +99,7 @@ namespace ns
         }
         void TextButton::setFont(const std::wstring& fontname)
         {
-            if ((fontLoaded = (fc::GetFont(fontname) != nullptr)))
+            if ((fontLoaded = fc::GetFont(fontname)))
                 text.setFont(*fc::GetFont(fontname));
         }
         void TextButton::setString(const std::wstring& string) { text.setString(string); }
@@ -289,7 +289,7 @@ namespace ns
                 
                 if (wasPressed || ignoreWasPressed)
                 {
-                    text.setFillColor(sf::Color::White); shape.setFillColor(sf::Color::White);
+                    text.setFillColor(sf::Color::White); shape.setFillColor(sf::Color(0,0,0,140));
                     bool constains = shape.getGlobalBounds().contains(dot.x, dot.y);
                     if (constains) event = sf::Event(); // So that no button will be clicked being the underlaying.
                     

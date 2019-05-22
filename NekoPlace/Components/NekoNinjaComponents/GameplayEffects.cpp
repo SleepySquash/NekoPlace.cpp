@@ -10,7 +10,7 @@
 
 namespace NekoNinja
 {
-    HeartsShape::HeartsShape(float x, float y, float scale)
+    HeartsShape::HeartsShape(float x, float y, float scale, bool reverse) : reverse(reverse)
     {
         sprite.setPosition(x*gs::scalex, y*gs::scaley);
         sprite.setScale(scale, scale);
@@ -19,7 +19,7 @@ namespace NekoNinja
     {
         sf::Texture* texture = ic::LoadTexture(L"Data/Images/heartsshape.png");
         if (texture) sprite.setTexture(*texture);
-        sprite.setOrigin(190, 0);
+        sprite.setOrigin(190, reverse ? texture->getSize().y : 0);
         sprite.setScale(0.3*gs::scale, 0.3*gs::scale);
     }
     void HeartsShape::Update(const sf::Time& elapsedTime)
@@ -47,8 +47,8 @@ namespace NekoNinja
         text.setFillColor(sf::Color::Yellow);
         text.setOutlineColor(sf::Color(40, 40, 40, 255));
         text.setOutlineThickness(2.f * gs::scale);
-        text.setFont(*fc::GetFont(L"Pacifica.ttf"));
-        fontLoaded = (fc::GetFont(L"Pacifica.ttf") != nullptr);
+        fontLoaded = fc::GetFont(L"Pacifica.ttf");
+        if (fontLoaded) text.setFont(*fc::GetFont(L"Pacifica.ttf"));
         
         text.setPosition(text.getPosition().x - text.getLocalBounds().width/2, text.getPosition().y);
         if (text.getGlobalBounds().left < 0)
@@ -84,8 +84,8 @@ namespace NekoNinja
         text.setFillColor(sf::Color::Red);
         text.setOutlineColor(sf::Color(40, 40, 40, 255));
         text.setOutlineThickness(2.f * gs::scale);
-        text.setFont(*fc::GetFont(L"Pacifica.ttf"));
-        fontLoaded = (fc::GetFont(L"Pacifica.ttf") != nullptr);
+        fontLoaded = fc::GetFont(L"Pacifica.ttf");
+        if (fontLoaded) text.setFont(*fc::GetFont(L"Pacifica.ttf"));
         
         text.setPosition(text.getPosition().x - text.getLocalBounds().width/2, text.getPosition().y);
         if (text.getGlobalBounds().left < 0)
@@ -108,4 +108,36 @@ namespace NekoNinja
         }
     }
     void CriticalHitText::Draw(sf::RenderWindow* window) { if (fontLoaded) window->draw(text); }
+    
+    
+    
+    ScratchScratch::ScratchScratch() { text.setString(L"Цап-царап!"); }
+    void ScratchScratch::Init()
+    {
+        text.setFillColor(sf::Color::Cyan);
+        text.setOutlineColor(sf::Color::Red);
+        fontLoaded = fc::GetFont(L"Pacifica.ttf");
+        if (fontLoaded) text.setFont(*fc::GetFont(L"Pacifica.ttf"));
+    }
+    void ScratchScratch::Update(const sf::Time& elapsedTime)
+    {
+        if (elapsed < 0.3f) elapsed += elapsedTime.asSeconds();
+        else
+        {
+            alpha -= 255 * elapsedTime.asSeconds();
+            if (alpha <= 0) novelSystem->PopComponent(this);
+            else {
+                text.setFillColor(sf::Color(text.getFillColor().r, text.getFillColor().g, text.getFillColor().b, alpha));
+                text.setOutlineColor(sf::Color(text.getOutlineColor().r, text.getOutlineColor().g, text.getOutlineColor().b, alpha));
+            }
+        }
+    }
+    void ScratchScratch::Resize(unsigned int width, unsigned int height)
+    {
+        text.setPosition(width/2, height/2);
+        text.setCharacterSize(160 * gs::scale);
+        text.setOutlineThickness(6.f * gs::scale);
+        text.setOrigin(text.getLocalBounds().width/2, text.getLocalBounds().height/2);
+    }
+    void ScratchScratch::Draw(sf::RenderWindow* window) { if (fontLoaded) window->draw(text); }
 }

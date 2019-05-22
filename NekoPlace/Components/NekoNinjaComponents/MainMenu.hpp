@@ -20,7 +20,8 @@
 
 #include "../../Essentials/ResourcePath.hpp"
 #include "../../Engine/EntitySystem.hpp"
-#include "../../Engine/StaticMethods.hpp"
+#include "../../Engine/Settings.hpp"
+#include "../../Engine/Collectors.hpp"
 #include "../../Engine/GUIInterface.hpp"
 
 #include "Player.hpp"
@@ -28,6 +29,7 @@
 #include "NekoNinja.hpp"
 #include "../VNLightComponents/Novel.hpp"
 #include "Popup.hpp"
+#include "ItemDatabaseCollection.hpp"
 
 using std::cin;
 using std::cout;
@@ -66,30 +68,18 @@ namespace NekoNinja
         
         sf::Vector2i dot;
         
-        bool firstTimeIn{ true };
+        bool firstTimeIn{ false }; /// { true };
         MainMenu* menu{ nullptr };
         bool hasFocusOnNeko{ false }; sf::Vector2i pressedNekoPos{ 0, 0 };
-        NekoEntity* focusOnNeko{ nullptr }, *pressedNeko{ nullptr }, *nintNeko{ nullptr };
-        sf::RectangleShape nintShape; sf::Text nintNameText, nintText;
-        sf::Sprite nintNekoSprite; GUI::TextButton nintCloseButton, nintSelectMainButton;
+        NekoEntity* focusOnNeko{ nullptr }, *pressedNeko{ nullptr };
+        
         GUI::SpriteButton nekoListButton, questListButton, nekoTeamButton, quitButton;
         GUI::SpriteButton roomBackButton;
-        sf::Color nintRarityColor{ sf::Color::White }, nintMoodColor{ sf::Color::White };
-        std::wstring nintDescriptionText{ L"" }, nintRarityText{ L"" }, nintMoodText{ L"" };
-        float nintYYInfoStart{ 0 };
-        bool nintDontDrawPersonNeko{ false };
-        sf::Sprite nintBodyNeko, nintHeart;
-        GUI::TextButton nintTalkButton, nintWardrobeButton, nintGiftButton, nintActionButton;
         Page nintReturnTo{ Page::no };
         
-        AbilityBase* nintAbility{ nullptr };
-        sf::RectangleShape nintAbilityShape;
-        sf::Text nintAbilityText;
-        std::wstring nintAbilityDescription{ L"" };
-        sf::Sprite nintAbilitySprite; bool nintAbilitySpriteLoaded{ false };
-        
-        sf::RectangleShape nlstNekoShape;
-        GUI::SpriteButtons nlstNekoButton;
+        float ntmNekoStartXX{ 0 }, ntmNekoScaling{ 1.f };
+        sf::RectangleShape ntmNekoShape; int ntmChoosing{ 0 };
+        GUI::SpriteButtons ntmNekoButton;
         
         bool active{ false };
         float move_dx{ 0 }, move_dy{ 0 };
@@ -114,7 +104,6 @@ namespace NekoNinja
         void CalculateCameraPosition();
         void CalculateCameraScale();
         void LoadTextureLevel();
-        void OpenNekoInterface(NekoEntity* entity);
         void RecieveMessage(MessageHolder& message);
     };
     
@@ -131,7 +120,7 @@ namespace NekoNinja
         
         Room room;
         sf::Sprite background;
-        sf::Sprite neko; std::wstring nekoTextureName{ L"" };
+        sf::Sprite neko; std::wstring nekoTextureName{ L"" }; float nekoRelScale{ 1.f };
         bool spriteLoaded{ false }, nekoSpriteLoaded{ false };
         bool verticalOrientation{ false };
         enum class Screen { main, stage, inventory, room, account };
@@ -163,6 +152,8 @@ namespace NekoNinja
         sf::RectangleShape backShape;
         sf::RectangleShape accountBackShape;
         sf::RectangleShape expShape;
+        
+        //GUI::StageButtons stageButtons;
         
         void Init() override;
         void Destroy() override;

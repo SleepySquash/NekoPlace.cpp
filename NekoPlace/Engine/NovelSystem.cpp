@@ -17,6 +17,8 @@ namespace ns
     void NovelObject::Resize(unsigned int width, unsigned int height) { }
     void NovelObject::PollEvent(sf::Event& event) { }
     void NovelObject::Destroy() { }
+    void NovelObject::ReceiveMessage(MessageHolder&) { }
+    void NovelObject::SendMessage(MessageHolder message) { ReceiveMessage(message); }
     void NovelObject::SetPriority(int priority) { this->priority = priority; /* TODO: Sorting */ }
     void NovelObject::ChangePriority(int priority) {
         if (novelSystem != nullptr)
@@ -59,10 +61,16 @@ namespace ns
         component->offline = true;
         component->Destroy();
     }
+    void NovelSystem::SendMessage(MessageHolder message) { ReceiveMessage(message); }
+    void NovelSystem::ReceiveMessage(MessageHolder& message) {
+        if (objects.size())
+            for (auto e : objects)
+                if (!e->offline) e->ReceiveMessage(message);
+    }
     void NovelSystem::clear()
     {
         list<NovelObject*>::iterator it = objects.begin();
-        while (it != objects.end()) { (*it)->Destroy(); delete (*it); objects.erase(it++); }
+        while (it != objects.end()) { if (!(*it)->offline) (*it)->Destroy(); delete (*it); objects.erase(it++); }
         objects.clear();
     }
     void NovelSystem::ChangePriorityOf(NovelObject* component, int priority)
@@ -83,4 +91,8 @@ namespace ns
                 objects.push_back(component);
         }
     }
+    list<NovelObject*>::iterator NovelSystem::begin() { return objects.begin(); }
+    list<NovelObject*>::iterator NovelSystem::end() { return objects.end(); }
+    list<NovelObject*>::const_iterator NovelSystem::cbegin() const { return objects.cbegin(); }
+    list<NovelObject*>::const_iterator NovelSystem::cend() const { return objects.cend(); }
 }

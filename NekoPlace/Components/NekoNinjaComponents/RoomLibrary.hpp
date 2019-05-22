@@ -19,7 +19,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "../../Essentials/ResourcePath.hpp"
-#include "../../Engine/StaticMethods.hpp"
+#include "../../Engine/Settings.hpp"
 #include "../../Engine/GUIInterface.hpp"
 
 #include "../VNLightComponents/Novel.hpp"
@@ -38,8 +38,8 @@ using namespace ns;
 namespace NekoNinja
 {
     struct NekoEntity;
-    struct RoomLibrary { static vector<NekoEntity*> neko; };
-    namespace roomLibrary { void clear(); }
+    struct RoomLibrary { static vector<NekoEntity*> neko; static vector<NekoEntity*> nekolist; };
+    namespace roomLibrary { void clear(); void sortlist(); }
     struct NekoEntity
     {
         sf::Sprite sprite, dialogueSprite;
@@ -49,9 +49,9 @@ namespace NekoNinja
         
         int occupiedAt{ -1 };
         bool inited{ false };
-        float x{ 0 }, y{ 0 };
+        float x{ 0 }, y{ 0 }, relScale{ 1 };
         
-        bool beingActionedWith{ false };
+        bool beingActionedWith{ false }, highlightedDuringSelection{ false };
         bool moveRight{ false }, moveLeft{ false }, moveDown{ false }, moveUp{ false };
         float xySpd{ 140 };
         

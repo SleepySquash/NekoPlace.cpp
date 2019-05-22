@@ -21,6 +21,19 @@ namespace NekoNinja
     {
         static float timeMultiplier, getHarderTimeMultiplier, velocityMultiplier;
         static float scoreMultiplier;
+        static unsigned int lifeScoreDelta, maxLifes;
+        static float difficultyLevelUpTime;
+        static int poopPosibility;
+        
+        static float gravity;
+        static float yStartVelocity;
+        static int yStartRandomVelocity, xStartRandomVelocity;
+        
+        enum class yySpawnMode { top, bottom, random };
+        static yySpawnMode spawnCoordsYYmode;
+        static bool randomSpawnYYmode;
+        
+        static bool showEventDescription;
     };
     typedef NekoNinjaSettings nns;
 }

@@ -27,7 +27,7 @@ namespace NekoNinja
     struct NekoBase
     {
         std::wstring name, display{ L"" };
-        float chance, affection{ 0 };
+        float possibility, chance, chanceAfterTamed{ 1.f }, affection{ 0 };
         int difficultyAvailable;
         unsigned int levelNeeded;
         bool tamed;
@@ -36,15 +36,16 @@ namespace NekoNinja
         sf::Color color;
         sf::IntRect offsets;
         
-        float xySpd;
+        float xySpd, chibiScale, personScale, novelScale;
         int personSprite_offsetX{ 0 }, personSprite_offsetY{ 0 };
         
         NekoBase();
         ~NekoBase();
-        NekoBase(const std::wstring& name, const float& chance, int difficultyAvailable = 0, float xySpd = 140, unsigned int levelNeeded = 0, int l = 15, int t = 15, int w = 15, int h = 15, bool tamed = false, const sf::Color& ocolor = sf::Color::Transparent);
+        NekoBase(const std::wstring& name, const float& chance, int difficultyAvailable = 0, float xySpd = 140, unsigned int levelNeeded = 0, sf::IntRect rect = sf::IntRect(15, 15, 15, 15), float chibiScale = 0.48f, float novelScale = 1.f, float personScale = 1.f, bool tamed = false, const sf::Color& ocolor = sf::Color::Transparent);
         virtual void Save(const std::wofstream& wof);
         virtual void Load(nss::CommandSettings& command);
         virtual void NovelTalkTo(Entity* entity);
+        virtual void NovelIntroduction(Entity* entity);
         virtual std::wstring RandomRoomDialogue();
     };
 }

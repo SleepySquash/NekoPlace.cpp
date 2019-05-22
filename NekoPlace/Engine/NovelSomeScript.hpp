@@ -69,6 +69,12 @@ namespace nss
     float ArgumentAsFloat(CommandSettings& results);
     int ArgumentAsInt(CommandSettings& results);
     
+    int ParseAsInt(CommandSettings& results);
+    float ParseAsFloat(CommandSettings& results);
+    std::wstring ParseAsString(CommandSettings& results);
+    std::wstring ParseAsStringWOLowercase(CommandSettings& results);
+    bool ParseAsBool(CommandSettings& results);
+    
     std::wstring GetStringWithLineBreaks(sf::Text& text, const std::wstring& line, unsigned int width, int shift = 0);
 }
 

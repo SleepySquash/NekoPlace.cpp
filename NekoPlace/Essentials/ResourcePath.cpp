@@ -56,17 +56,8 @@
     #else
         #include "Base.hpp"
 
-        std::string resourcePath(void)
-        {
-            return "";
-        }
-        std::string documentsPath(void)
-        {
-            return "";
-        }
-        std::wstring executablePath(void)
-        {
-            return ns::base::GetCurrentWorkingDir();
-        }
+        std::string resourcePath(void) { return ""; }
+        std::string documentsPath(void) { return ""; }
+        std::wstring executablePath(void) { return ns::base::GetCurrentWorkingDir(); }
     #endif
 #endif

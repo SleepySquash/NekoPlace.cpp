@@ -43,6 +43,7 @@ namespace NekoNinja
         if ((spriteLoaded = texture)) {
             sprite.setTexture(*texture);
             sprite.setOrigin(texture->getSize().x/2, texture->getSize().y - texture->getSize().y/15);
+            relScale = (static_cast<float>(gs::relativeHeight)/static_cast<float>(texture->getSize().y)) * info->chibiScale;
         }
         
         int i{ 0 }; do {
@@ -179,7 +180,7 @@ namespace NekoNinja
     void NekoEntity::PollEvent(sf::Event& event) { }
     void NekoEntity::Resize()
     {
-        sprite.setScale(0.7 * Room::scale * gs::scale, 0.7 * Room::scale * gs::scale);
+        sprite.setScale(0.7 * relScale * Room::scale * gs::scale, 0.7 * relScale * Room::scale * gs::scale);
         sprite.setPosition((Room::x + x) * Room::scale * gs::scale, (Room::y + y) * Room::scale * gs::scale);
         
         if (drawDialogue) {ResizeDialogue();
@@ -203,7 +204,8 @@ namespace NekoNinja
         dialogueSprite.setPosition(sprite.getPosition().x, sprite.getGlobalBounds().top);
         dialogue.setPosition(dialogueSprite.getPosition());
     }
-    void NekoEntity::Draw(sf::RenderWindow* window) {
+    void NekoEntity::Draw(sf::RenderWindow* window)
+    {
         if (x > -Room::x - sprite.getGlobalBounds().width/2 && y > -Room::y && x < -Room::x + Room::xWidth + sprite.getGlobalBounds().width/2 && y < -Room::y + Room::yHeight + sprite.getGlobalBounds().height)
         {
             if (spriteLoaded) window->draw(sprite);
@@ -218,23 +220,6 @@ namespace NekoNinja
         if (spriteLoaded) { scale = 0.7; //TODO: Focus on the main neko
             x = gs::width/(2*gs::scale*scale) - sprite.getLocalBounds().width*roomScale/2;
             y = gs::height/(2*gs::scale*scale) - sprite.getLocalBounds().height*roomScale/2; }
-        
-        nintText.setFont(*fc::GetFont(L"Pacifica.ttf"));
-        nintText.setOutlineColor(sf::Color::Black);
-        nintNameText.setFont(*fc::GetFont(L"Pacifica.ttf"));
-        nintNameText.setOutlineColor(sf::Color::Black);
-        nintAbilityText.setFont(*fc::GetFont(L"Pacifica.ttf"));
-        nintAbilityText.setOutlineColor(sf::Color::Black);
-        nintShape.setFillColor(sf::Color(0,0,0,80));
-        nintAbilityShape.setFillColor(sf::Color(0,0,0,80));
-        nintCloseButton.setString(L"Закрыть");
-        nintCloseButton.setFont(L"Pacifica.ttf");
-        nintCloseButton.setCharacterSize(70);
-        nintCloseButton.valign = Valign::Bottom;
-        
-        nintSelectMainButton.setString(L"В отряд");
-        nintSelectMainButton.setFont(L"Pacifica.ttf");
-        nintSelectMainButton.setCharacterSize(70);
         
         nekoListButton.setTexture(L"Data/Images/room_buttons.png");
         nekoListButton.sprite.setTextureRect({ 0,0,160,160 });
@@ -255,33 +240,9 @@ namespace NekoNinja
         roomBackButton.sprite.setRotation(-70);
         
         
-        sf::Texture* texture = ic::LoadTexture(L"Data/Images/heart.png");
-        if (texture)
-        {
-            nintHeart.setTexture(*texture);
-            nintHeart.setTextureRect(sf::IntRect(268, 0, 268, 256));
-            nintHeart.setOrigin(texture->getSize().x, 0);
-        }
-        
-        nintTalkButton.setFont(L"Pacifica.ttf");
-        nintTalkButton.setCharacterSize(69);
-        nintTalkButton.setString(L"Поговорить");
-        nintWardrobeButton.setFont(L"Pacifica.ttf");
-        nintWardrobeButton.setCharacterSize(54);
-        nintWardrobeButton.setString(L"Гардероб");
-        nintWardrobeButton.halign = Halign::Left;
-        nintGiftButton.setFont(L"Pacifica.ttf");
-        nintGiftButton.setCharacterSize(54);
-        nintGiftButton.setString(L"Подарок");
-        nintGiftButton.halign = Halign::Right;
-        nintActionButton.setFont(L"Pacifica.ttf");
-        nintActionButton.setString(L"Действие");
-        nintActionButton.setCharacterSize(54);
-        nintActionButton.valign = nintTalkButton.valign = nintGiftButton.valign = nintWardrobeButton.valign = Valign::Bottom;
-        
-        nlstNekoButton.valign = Valign::Bottom;
-        nlstNekoShape.setFillColor(sf::Color(0,0,0,100));
-        nlstNekoShape.setOutlineColor(sf::Color::White);
+        ntmNekoButton.valign = Valign::Bottom;
+        ntmNekoShape.setFillColor(sf::Color(0,0,0,100));
+        ntmNekoShape.setOutlineColor(sf::Color::White);
     }
     Room::~Room() { ic::DeleteImage(L"Data/Images/heart.png"); }
     void Room::Switch(bool on)
@@ -309,7 +270,7 @@ namespace NekoNinja
                 novel->lines.push_back(L"disappear fade:0.2");
                 firstTimeIn = false;
             } else { if (scale > 1.7) scale = 1.7; else if (scale < 1) scale = 1; }
-        } else { if (page == Page::neko) nintNeko->beingActionedWith = false; page = Page::no; }
+        } else { /*if (page == Page::neko) nintNeko->beingActionedWith = false;*/ page = Page::no; }
         Resize(gs::width, gs::height);
     }
     void Room::Destroy() { for (auto& n : rl::neko) n->Destroy(); }
@@ -317,12 +278,13 @@ namespace NekoNinja
     {
         if (!active) return;
         if (gs::inGame) { active = false; return; }
+        gs::requestWindowRefresh = true;
         for (auto& n : rl::neko) n->Update(elapsedTime);
         
         if (hasFocusOnNeko)
         {
             x = gs::width/(2*gs::scale*scale) - (focusOnNeko)->x;
-            y = gs::height/(2*gs::scale*scale) - (focusOnNeko)->y + (focusOnNeko)->sprite.getLocalBounds().height/4;
+            y = gs::height/(2*gs::scale*scale) - (focusOnNeko)->y + (focusOnNeko)->sprite.getLocalBounds().height/4*focusOnNeko->relScale;
             CalculateCameraPosition();
         }
     }
@@ -331,86 +293,76 @@ namespace NekoNinja
         if (!active) return;
         for (auto& n : rl::neko) n->PollEvent(event);
         
-        
-        if (page == Page::neko)
+        if (page == Page::neko) { }
+        else if (nekoListButton.PollEvent(event)) menu->entity->SendMessage({"NekoGridUI :: Switch"});
+        else if (questListButton.PollEvent(event)) { if (page == Page::questlist) page = Page::no; else page = Page::questlist; }
+        else if (nekoTeamButton.PollEvent(event))
         {
-            if (quitButton.PollEvent(event)) {
-                if (nintAbility) ic::DeleteImage(L"Data/Neko/Ability/Icon/" + nintAbility->name + L".jpg");
-                ic::DeleteImage(L"Data/Neko/Person/" + nintNeko->info->name + L".png");
-                page = nintReturnTo; if (hasFocusOnNeko) (focusOnNeko)->beingActionedWith = false; }
-            else if (nintTalkButton.PollEvent(event))
+            if (page == Page::nekoteam)
             {
-                nintDontDrawPersonNeko = true;
-                nintNeko->info->NovelTalkTo(menu->entity);
-                /*auto* novel = menu->entity->AddComponent<VNLightComponents::Novel>();
-                novel->lines.push_back(L"blackend");
-                novel->lines.push_back(L"show " + nintNeko->info->name + L" cleft message:no");
-                novel->lines.push_back(nintNeko->info->name + L" \"Йей, приветь!!~ :3\"");
-                novel->lines.push_back(L"disappear fade:0.2");*/
-            }
-            else if (nintActionButton.PollEvent(event)) { }
-            else if (nintGiftButton.PollEvent(event)) { }
-            else if (nintWardrobeButton.PollEvent(event)) { }
-            else if (nintSelectMainButton.PollEvent(event) && Player::self->neko != (nintNeko))
-            {
-                ic::DeleteImage(L"Data/Neko/Person/" + Player::self->neko->info->name + L".png");
-                Player::self->neko = (nintNeko);
-                if (Player::self->neko && menu)
-                {
-                    sf::Texture* texture = ic::LoadTexture(L"Data/Neko/Person/" + Player::self->neko->info->name + L".png");
-                    if (texture) {
-                        menu->neko.setTexture(*texture, true);
-                        menu->neko.setOrigin(texture->getSize().x/2 + Player::self->neko->info->personSprite_offsetX, texture->getSize().y + Player::self->neko->info->personSprite_offsetY); }
-                    menu->nekoSpriteLoaded = (texture != nullptr);
-                    menu->Resize(gs::width, gs::height);
-                }
-                Player::self->SaveRoom();
-            }
-        }
-        else if (nekoListButton.PollEvent(event))
-        {
-            if (page == Page::nekolist)
-            {
-                for (auto& n : rl::neko) ic::DeleteImage(L"Data/Neko/Avatar/" + n->info->name + L".png");
+                if (Player::self->neko) ic::DeleteImage(L"Data/Neko/Avatar/" + Player::self->neko->info->name + L".png");
+                for (auto& n : Player::self->passiveNeko) ic::DeleteImage(L"Data/Neko/Avatar/" + n->info->name + L".png");
+                /*if (Player::self->level < 50)*/ ic::DeleteImage(L"Data/Images/lock.png");
+                ic::DeleteImage(L"Data/Images/plus.png");
                 page = Page::no;
             }
             else
             {
-                for (auto& n : rl::neko) ic::PreloadTexture(L"Data/Neko/Avatar/" + n->info->name + L".png");
-                page = Page::nekolist;
+                if (Player::self->neko) ic::PreloadTexture(L"Data/Neko/Avatar/" + Player::self->neko->info->name + L".png", 2, true, true);
+                for (auto& n : Player::self->passiveNeko) ic::PreloadTexture(L"Data/Neko/Avatar/" + n->info->name + L".png", 2, true, true);
+                /*if (Player::self->level < 50)*/ ic::PreloadTexture(L"Data/Images/lock.png");
+                ic::PreloadTexture(L"Data/Images/plus.png");
+                page = Page::nekoteam;
             }
         }
-        else if (questListButton.PollEvent(event)) { if (page == Page::questlist) page = Page::no; else page = Page::questlist; }
-        else if (nekoTeamButton.PollEvent(event)) { if (page == Page::nekoteam) page = Page::no; else page = Page::nekoteam; }
-        else if (page == Page::nekolist)
+        else if (page == Page::nekolist) { }
+        else if (page == Page::questlist) { if (quitButton.PollEvent(event)) page = Page::no; }
+        else if (page == Page::nekoteam)
         {
             if (quitButton.PollEvent(event))
             {
-                for (auto& n : rl::neko) ic::DeleteImage(L"Data/Neko/Avatar/" + n->info->name + L".png");
+                if (Player::self->neko) ic::DeleteImage(L"Data/Neko/Avatar/" + Player::self->neko->info->name + L".png");
+                for (auto& n : Player::self->passiveNeko) ic::DeleteImage(L"Data/Neko/Avatar/" + n->info->name + L".png");
+                /*if (Player::self->level < 50)*/ ic::DeleteImage(L"Data/Images/lock.png");
+                ic::DeleteImage(L"Data/Images/plus.png");
                 page = Page::no;
             }
-            else
+            else if (event.type == sf::Event::MouseButtonPressed || event.type == sf::Event::MouseButtonReleased || event.type == sf::Event::TouchBegan || event.type == sf::Event::TouchEnded)
             {
-                float xx = 168*gs::scale, yy = 240*gs::scale; int i{ 0 };
-                for (auto& n : rl::neko)
+                NekoBase* n = nullptr;
+                float xx = ntmNekoStartXX, yy = 240*gs::scaley;
+                for (int i = 0, maxNekoTeam = 4; i < maxNekoTeam; ++i)
                 {
-                    if (ic::FindTexture(L"Data/Neko/Avatar/" + n->info->name + L".png"))
+                    bool locked = ((i == 1 && Player::self->level < 16) || (i == 2 && Player::self->level < 25) || (i == 3 && Player::self->level < 35));
+                    if (!locked)
                     {
-                        nlstNekoButton.index = i;
-                        nlstNekoButton.setTexture(ic::FindTexture(L"Data/Neko/Avatar/" + n->info->name + L".png"));
-                        nlstNekoButton.setPosition(xx, yy);
-                        if (nlstNekoButton.PollEvent(event)) { OpenNekoInterface(n); break; }
-                        ++i;
+                        if (!i) n = Player::self->neko->info; else if (Player::self->passiveNeko.size() >= i) n = Player::self->passiveNeko[i - 1]->info; else n = nullptr;
+                        if (n)
+                        {
+                            ntmNekoButton.index = i;
+                            sf::Texture* texture = ic::FindTexture(L"Data/Neko/Avatar/" + n->name + L".png");
+                            ntmNekoButton.setTexture(texture);
+                            if (texture) ntmNekoButton.setScale(168.f*ntmNekoScaling / texture->getSize().x);
+                            ntmNekoButton.setPosition(xx, yy);
+                        }
+                        else
+                        {
+                            ntmNekoButton.index = i; sf::Texture* texture = nullptr;
+                            texture = ic::FindTexture(L"Data/Images/plus.png");
+                            ntmNekoButton.setTexture(texture);
+                            if (texture) ntmNekoButton.setScale(158.f*ntmNekoScaling / texture->getSize().y);
+                            ntmNekoButton.setPosition(xx, yy);
+                        }
+                        if (ntmNekoButton.PollEvent(event))
+                        {
+                            ntmChoosing = (i != 0 && !n) ? -1 : i;
+                            if (!i) menu->entity->SendMessage({"NekoGridUI :: ChooseActive"});
+                            else menu->entity->SendMessage({"NekoGridUI :: ChoosePassive"});
+                        }
                     }
-                    xx += 178*gs::scale;
-                    if (xx > gs::width - 168*gs::scale) { xx = 168*gs::scale; yy += 178*gs::scale; }
+                    xx += 178*gs::scale * ntmNekoScaling;
                 }
-                nlstNekoButton.eventPolled(event);
             }
-        }
-        else if (page == Page::nekoteam || page == Page::questlist)
-        {
-            if (quitButton.PollEvent(event)) page = Page::no;
         }
         else
         {
@@ -450,7 +402,7 @@ namespace NekoNinja
                 {
                     interception = (*it)->sprite.getGlobalBounds().contains(dot.x, dot.y);
                     if (interception && pressedNeko == *it && sqrt(pow(pressedNekoPos.x - dot.x, 2) + pow(pressedNekoPos.y - dot.y, 2)) < 15)
-                        OpenNekoInterface(*it);
+                    { nintReturnTo = Page::no; menu->entity->SendMessage({"NekoUI :: SelectNeko", *it}); menu->entity->SendMessage({"NekoUI :: Show"}); }
                 }
             }
             else if (event.type == sf::Event::TouchMoved || (event.type == sf::Event::MouseMoved && sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)))
@@ -516,101 +468,14 @@ namespace NekoNinja
         roomBackButton.setPosition(width, height/3.5);
         
         
-        if (page == Page::neko)
-        {
-            nintCloseButton.Resize(width, height);
-            if (gs::verticalOrientation)
-            {
-                nintBodyNeko.setScale(1.4 * gs::scScale, 1.4 * gs::scScale);
-                nintShape.setSize({gs::width*4.55f/5.f, gs::height*4.3f/5.f});
-                nintShape.setPosition((gs::width - nintShape.getSize().x)/2, (gs::height - nintShape.getSize().y)/2);
-                
-                if (nintBodyNeko.getGlobalBounds().height + 20*gs::scale > gs::height)
-                    nintBodyNeko.setPosition(width/2,nintBodyNeko.getGlobalBounds().height + 20*gs::scale);
-                else nintBodyNeko.setPosition(width/2, height);
-            }
-            else
-            {
-                nintBodyNeko.setScale(1.3 * gs::scScale, 1.3 * gs::scScale);
-                nintShape.setSize({3*gs::width/5.f, gs::height*4.3f/5.f});
-                nintShape.setPosition(gs::width - 3*gs::width/5.f, (gs::height - nintShape.getSize().y)/2);
-                
-                if (nintBodyNeko.getGlobalBounds().height + 20*gs::scale > gs::height)
-                    nintBodyNeko.setPosition(width/5, nintBodyNeko.getGlobalBounds().height + 20*gs::scale);
-                else nintBodyNeko.setPosition(width/5, height);
-            }
-            
-            nintCloseButton.setPosition(nintShape.getPosition().x + nintShape.getSize().x/2, nintShape.getGlobalBounds().top + nintShape.getGlobalBounds().height - 20*gs::scaley);
-            nintNameText.setCharacterSize(80 * gs::scale);
-            nintNameText.setOrigin(nintNameText.getGlobalBounds().width/2, 0);
-            nintNameText.setOutlineThickness(gs::scale);
-            nintText.setOutlineThickness(gs::scale);
-            
-            nintHeart.setScale(0.25*gs::scale, 0.25*gs::scale);
-            nintNameText.setScale(1, 1);
-            if (nintNameText.getLocalBounds().width + nintHeart.getGlobalBounds().width + 45*gs::scale > nintShape.getSize().x)
-                nintNameText.setScale(nintShape.getSize().x/(nintNameText.getLocalBounds().width + nintHeart.getGlobalBounds().width + 45*gs::scale), nintNameText.getScale().y);
-            nintNameText.setPosition(nintShape.getPosition().x + nintShape.getSize().x/2, nintShape.getGlobalBounds().top + gs::scaley);
-            
-            nintHeart.setPosition(nintNameText.getGlobalBounds().left + 45*gs::scale, nintShape.getPosition().y + 25*gs::scale);
-            if (nintNameText.getPosition().x < nintShape.getPosition().x) //TODO: add +texture.size().x
-                nintHeart.setPosition(nintShape.getPosition().x + 10*gs::scale, nintShape.getPosition().y + 25*gs::scale);
-            nintYYInfoStart = nintNameText.getGlobalBounds().top + nintNameText.getGlobalBounds().height;
-            
-            nintSelectMainButton.Resize(width, height);
-            nintSelectMainButton.setPosition(nintShape.getPosition().x + nintShape.getSize().x/2, nintShape.getGlobalBounds().top + nintShape.getGlobalBounds().height/2);
-            
-            if (nintAbility)
-            {
-                nintAbilityShape.setOutlineThickness(4 * gs::scale);
-                nintAbilityShape.setSize({ nintShape.getSize().x*9.5f/10.f, 120*gs::scale });
-                if (gs::verticalOrientation) nintAbilityShape.setSize({ nintAbilityShape.getSize().x, 140*gs::scale });
-                nintAbilityShape.setPosition(nintShape.getPosition().x + (nintShape.getSize().x - nintShape.getSize().x*9.5f/10.f)/2, 0);
-                if (nintAbilitySpriteLoaded)
-                {
-                    float nintSpriteScale = (float)(nintAbilityShape.getSize().y)/nintAbilitySprite.getLocalBounds().width;
-                    nintAbilitySprite.setScale(nintSpriteScale, nintSpriteScale);
-                    nintAbilitySprite.setPosition(nintAbilityShape.getPosition().x, 0);
-                }
-                
-                nintAbilityText.setOutlineThickness(gs::scale);
-                nintAbilityText.setCharacterSize(27 * gs::scale);
-                nintAbilityDescription = nss::GetStringWithLineBreaks(nintAbilityText, nintAbility->description, nintAbilityShape.getSize().x - nintAbilitySprite.getGlobalBounds().width - 10*gs::scalex);
-            }
-            
-            // TODO: if ((yy) > положение_куда_ставим_кнопки) { ставим кнопки в yy; }
-            /*if (gs::verticalOrientation)
-                nintWardrobeButton.characterSize = nintGiftButton.characterSize = nintActionButton.characterSize = 52;
-            else nintWardrobeButton.characterSize = nintGiftButton.characterSize = nintActionButton.characterSize = 58;*/
-            nintTalkButton.Resize(width, height);
-            nintWardrobeButton.Resize(width, height);
-            nintGiftButton.Resize(width, height);
-            nintActionButton.Resize(width, height);
-            
-            if (nintShape.getSize().x - (10*gs::scale + nintWardrobeButton.text.getGlobalBounds().width + nintGiftButton.text.getGlobalBounds().width) < nintWardrobeButton.text.getGlobalBounds().width)
-            {
-                nintTalkButton.setPosition(nintShape.getPosition().x + nintShape.getSize().x/2, nintShape.getPosition().y + nintShape.getSize().y - nintWardrobeButton.text.getGlobalBounds().height*2*1.5);
-                nintActionButton.setPosition(nintShape.getPosition().x + nintShape.getSize().x/2, nintShape.getPosition().y + nintShape.getSize().y - nintWardrobeButton.text.getGlobalBounds().height*1.4);
-            }
-            else
-            {
-                nintTalkButton.setPosition(nintShape.getPosition().x + nintShape.getSize().x/2, nintShape.getPosition().y + nintShape.getSize().y - nintWardrobeButton.text.getGlobalBounds().height*1.7);
-                nintActionButton.setPosition(nintShape.getPosition().x + nintShape.getSize().x/2, nintShape.getPosition().y + nintShape.getSize().y - 10*gs::scale);
-            }
-            nintWardrobeButton.setPosition(nintShape.getPosition().x, nintShape.getPosition().y + nintShape.getSize().y - 10*gs::scale);
-            nintGiftButton.setPosition(nintShape.getPosition().x + nintShape.getSize().x, nintShape.getPosition().y + nintShape.getSize().y - 10*gs::scale);
-            
-            if (nintNeko)
-            {
-                nintText.setCharacterSize(44 * gs::scale);
-                nintDescriptionText = nss::GetStringWithLineBreaks(nintText, L"Пообщайтесь с кошкодевочкой, чтобы узнать её лучше~"/*nintNeko->info->characterDescription*/, nintShape.getSize().x - 10*gs::scalex, 10*gs::scale);
-            }
-        }
-        
-        nlstNekoButton.Resize(width, height);
-        nlstNekoShape.setSize({168*gs::scale, 168*gs::scale});
-        nlstNekoShape.setOrigin(nlstNekoShape.getSize().x/2, nlstNekoShape.getSize().y);
-        nlstNekoShape.setOutlineThickness(2*gs::scale);
+        ntmNekoStartXX = 178*gs::scale * 4 + 20*gs::scale;
+        if (ntmNekoStartXX > width/* - quitButton.sprite.getGlobalBounds().width*/)
+            ntmNekoScaling = (width/* - quitButton.sprite.getGlobalBounds().width*/)/ntmNekoStartXX;
+        ntmNekoStartXX = (width/* - quitButton.sprite.getGlobalBounds().width*/)/2 - (ntmNekoStartXX/2 - (168/2 + 10)*gs::scale)*ntmNekoScaling;
+        ntmNekoButton.Resize(width, height);
+        ntmNekoShape.setSize({168*gs::scale, 168*gs::scale});
+        ntmNekoShape.setOrigin(ntmNekoShape.getSize().x/2, ntmNekoShape.getSize().y);
+        ntmNekoShape.setOutlineThickness(3*gs::scale);
     }
     void Room::Draw(sf::RenderWindow* window)
     {
@@ -624,89 +489,67 @@ namespace NekoNinja
             window->draw(blackScreenShape);
             quitButton.Draw(window);
         }
-        nekoListButton.Draw(window);
-        questListButton.Draw(window);
-        nekoTeamButton.Draw(window);
-        
         if (page == Page::neko)
         {
-            window->draw(blackScreenShape);
-            if (!nintDontDrawPersonNeko) window->draw(nintBodyNeko);
-            //if (gs::verticalOrientation)
-            window->draw(nintShape);
-            quitButton.Draw(window);
-            
-            window->draw(nintHeart);
-            window->draw(nintNameText);
-            //nintCloseButton.Draw(window);
-            //nintSelectMainButton.Draw(window);
-            
-            float yy = nintYYInfoStart;
-            nintText.setCharacterSize(30 * gs::scale);
-            nintText.setString(L"(Здесь будет мой статус)");
-            nintText.setPosition(nintShape.getPosition().x + nintShape.getSize().x/2 - nintText.getGlobalBounds().width/2, yy);
-            window->draw(nintText); yy += nintText.getGlobalBounds().height + 10*gs::scale;
-            
-            nintText.setCharacterSize(50 * gs::scale);
-            nintText.setString(nintMoodText);
-            nintText.setPosition(nintShape.getPosition().x, yy);
-            nintText.setFillColor(nintMoodColor); window->draw(nintText);
-            nintText.setString(nintRarityText);
-            nintText.setPosition(nintShape.getPosition().x + nintShape.getSize().x - nintText.getGlobalBounds().width, yy);
-            nintText.setFillColor(nintRarityColor); window->draw(nintText);
-            nintText.setFillColor(sf::Color::White);
-            yy += nintText.getGlobalBounds().height + 25*gs::scale;
-            
-            nintText.setCharacterSize(44 * gs::scale);
-            nintText.setString(nintDescriptionText);
-            nintText.setPosition(nintShape.getPosition().x + nintShape.getSize().x/2 - nintText.getGlobalBounds().width/2, yy);
-            window->draw(nintText); yy += nintText.getGlobalBounds().height + 30*gs::scale;
-            
-            if (nintAbility)
-            {
-                float localyy = yy;
-                nintAbilityShape.setPosition(nintAbilityShape.getPosition().x, yy);
-                window->draw(nintAbilityShape);
-                nintAbilitySprite.setPosition(nintAbilityShape.getPosition().x, yy);
-                if (nintAbilitySpriteLoaded) window->draw(nintAbilitySprite);
-                
-                nintAbilityText.setCharacterSize(39 * gs::scale);
-                nintAbilityText.setString(nintAbility->display);
-                nintAbilityText.setPosition(nintAbilityShape.getPosition().x + nintAbilitySprite.getGlobalBounds().width + (nintAbilityShape.getSize().x - nintAbilitySprite.getGlobalBounds().width)/2 - nintAbilityText.getGlobalBounds().width/2, yy - 5*gs::scale);
-                window->draw(nintAbilityText); localyy += nintAbilityText.getGlobalBounds().height - 7*gs::scale;
-                
-                nintAbilityText.setCharacterSize(27 * gs::scale);
-                nintAbilityText.setString(nintAbilityDescription);
-                nintAbilityText.setPosition(nintAbilityShape.getPosition().x + nintAbilitySprite.getGlobalBounds().width, localyy);
-                window->draw(nintAbilityText);
-                
-                yy += nintAbilityShape.getSize().y + 10*gs::scale;
-            }
-            
-            nintTalkButton.Draw(window);
-            nintWardrobeButton.Draw(window);
-            nintGiftButton.Draw(window);
-            nintActionButton.Draw(window);
+            nekoListButton.Draw(window);
+            questListButton.Draw(window);
+            nekoTeamButton.Draw(window);
         }
-        else if (page == Page::nekolist)
+        
+        if (page == Page::neko) { }
+        else if (page == Page::nekolist) { }
+        else if (page == Page::nekoteam)
         {
-            float xx = 168*gs::scale, yy = 240*gs::scale; int i{ 0 };
-            for (auto& n : rl::neko)
+            NekoBase* n = nullptr;
+            //float xx = 168*gs::scale, yy = 240*gs::scale;
+            float xx = ntmNekoStartXX, yy = 240*gs::scaley;
+            for (int i = 0, maxNekoTeam = 4; i < maxNekoTeam; ++i)
             {
-                if (ic::FindTexture(L"Data/Neko/Avatar/" + n->info->name + L".png"))
+                if (!i) n = Player::self->neko->info; else if (Player::self->passiveNeko.size() >= i) n = Player::self->passiveNeko[i - 1]->info; else n = nullptr;
+                if (n)
                 {
-                    nlstNekoShape.setPosition(xx, yy);
-                    nlstNekoShape.setFillColor(sf::Color(n->info->color.r, n->info->color.g, n->info->color.b, 150));
-                    window->draw(nlstNekoShape);
+                    ntmNekoShape.setPosition(xx, yy);
+                    ntmNekoShape.setScale(ntmNekoScaling, ntmNekoScaling);
+                    ntmNekoShape.setFillColor(sf::Color(n->color.r, n->color.g, n->color.b, 150));
+                    if (i == 0) ntmNekoShape.setOutlineColor(sf::Color(255, 60, 60, 255));
+                    else ntmNekoShape.setOutlineColor(sf::Color(60, 60, 255, 255));
+                    window->draw(ntmNekoShape);
                     
-                    nlstNekoButton.index = i;
-                    nlstNekoButton.setTexture(ic::FindTexture(L"Data/Neko/Avatar/" + n->info->name + L".png"));
-                    nlstNekoButton.setPosition(xx, yy);
-                    nlstNekoButton.Draw(window); ++i;
+                    ntmNekoButton.index = i;
+                    sf::Texture* texture = ic::FindTexture(L"Data/Neko/Avatar/" + n->name + L".png");
+                    ntmNekoButton.setTexture(texture);
+                    if (texture) ntmNekoButton.setScale(168.f*ntmNekoScaling / texture->getSize().x);
+                    ntmNekoButton.setPosition(xx, yy);
+                    ntmNekoButton.Draw(window);
                 }
-                xx += 178*gs::scale;
-                if (xx > gs::width - 168*gs::scale) { xx = 168*gs::scale; yy += 178*gs::scale; }
+                else
+                {
+                    ntmNekoShape.setPosition(xx, yy);
+                    ntmNekoShape.setScale(ntmNekoScaling, ntmNekoScaling);
+                    ntmNekoShape.setFillColor(sf::Color(90, 90, 90, 160));
+                    ntmNekoShape.setOutlineColor(sf::Color::White);
+                    window->draw(ntmNekoShape);
+                    
+                    bool locked = ((i == 1 && Player::self->level < 16) || (i == 2 && Player::self->level < 25) || (i == 3 && Player::self->level < 35));
+                    ntmNekoButton.index = i; sf::Texture* texture = nullptr;
+                    if (locked) texture = ic::FindTexture(L"Data/Images/lock.png");
+                    else texture = ic::FindTexture(L"Data/Images/plus.png");
+                    ntmNekoButton.setTexture(texture);
+                    if (texture) ntmNekoButton.setScale(158.f*ntmNekoScaling / texture->getSize().y);
+                    ntmNekoButton.setPosition(xx, yy - 5.f*gs::scale);
+                    ntmNekoButton.Draw(window);
+                }
+                xx += 178*gs::scale * ntmNekoScaling;
+                //if (xx > gs::width - 168*gs::scale) { xx = 168*gs::scale; yy += 178*gs::scale; }
             }
+            quitButton.Draw(window);
+        }
+        
+        if (page != Page::neko)
+        {
+            nekoListButton.Draw(window);
+            questListButton.Draw(window);
+            nekoTeamButton.Draw(window);
         }
     }
     void Room::CalculateCameraPosition()
@@ -756,51 +599,72 @@ namespace NekoNinja
             for (auto& n : rl::neko) n->inited = false;
         }
     }
-    void Room::OpenNekoInterface(NekoEntity* entity)
+    void Room::RecieveMessage(MessageHolder& message)
     {
-        nintReturnTo = page;
-        hasFocusOnNeko = true; nintNeko = focusOnNeko = entity;
-        entity->beingActionedWith = true; entity->drawDialogue = false;
-        page = Page::neko; nintDontDrawPersonNeko = false;
-        nintNameText.setString(entity->info->display);
-        nintNameText.setOrigin(nintNameText.getGlobalBounds().width/2, 0);
-        
-        if ((nintAbility = nintNeko->info->ability))
+        if (!active) return;
+                
+        if (message.info == "NekoUI :: SelectNeko") { hasFocusOnNeko = true; focusOnNeko = reinterpret_cast<NekoEntity*>(message.address); }
+        else if (message.info == "NekoUI :: Choosed" && page == Page::nekoteam)
         {
-            nintAbilityShape.setOutlineColor(nintAbility->passive ? sf::Color::Blue : sf::Color::Red);
-            sf::Texture* texture = ic::LoadTexture(L"Data/Neko/Ability/Icon/" + nintAbility->name + L".jpg");
-            if ((nintAbilitySpriteLoaded = texture)) { nintAbilitySprite.setTexture(*texture, true); }
+            if (ntmChoosing == 0)
+            {
+                if (message.address)
+                {
+                    NekoEntity* neko = reinterpret_cast<NekoEntity*>(message.address);
+                    if (neko && neko != Player::self->neko)
+                    {
+                        ic::DeleteImage(L"Data/Neko/Avatar/" + Player::self->neko->info->name + L".png");
+                        ic::DeleteImage(L"Data/Neko/Person/" + Player::self->neko->info->name + L".png");
+                        Player::self->neko->highlightedDuringSelection = false;
+                        Player::self->neko = neko; neko->highlightedDuringSelection = true;
+                        ic::PreloadTexture(L"Data/Neko/Avatar/" + neko->info->name + L".png", 2, true, true);
+                        if (Player::self->neko && menu)
+                        {
+                            sf::Texture* texture = ic::LoadTexture(L"Data/Neko/Person/" + Player::self->neko->info->name + L".png");
+                            if (texture) {
+                                menu->neko.setTexture(*texture, true);
+                                menu->neko.setOrigin(texture->getSize().x/2 + Player::self->neko->info->personSprite_offsetX, texture->getSize().y + Player::self->neko->info->personSprite_offsetY);
+                                menu->nekoRelScale = (static_cast<float>(gs::relativeHeight)/static_cast<float>(texture->getSize().y)) * Player::self->neko->info->novelScale;
+                            }
+                            menu->nekoSpriteLoaded = texture;
+                            menu->Resize(gs::width, gs::height);
+                        }
+                        Player::self->SaveRoom();
+                    }
+                }
+            }
+            else if (ntmChoosing == -1)
+            {
+                if (message.address)
+                {
+                    NekoEntity* neko = reinterpret_cast<NekoEntity*>(message.address);
+                    Player::self->passiveNeko.push_back(neko); neko->highlightedDuringSelection = true;
+                    ic::PreloadTexture(L"Data/Neko/Avatar/" + neko->info->name + L".png", 2, true, true);
+                    Player::self->SaveRoom();
+                }
+            }
+            else if (Player::self->passiveNeko.size() >= ntmChoosing)
+            {
+                NekoEntity* ours = Player::self->passiveNeko[ntmChoosing - 1];
+                ours->highlightedDuringSelection = false;
+                ic::DeleteImage(L"Data/Neko/Avatar/" + ours->info->name + L".png");
+                std::vector<NekoEntity*>::iterator it = Player::self->passiveNeko.begin() + (ntmChoosing - 1);
+                Player::self->passiveNeko.erase(it);
+                if (message.address)
+                {
+                    NekoEntity* neko = reinterpret_cast<NekoEntity*>(message.address);
+                    neko->highlightedDuringSelection = true;
+                    ic::PreloadTexture(L"Data/Neko/Avatar/" + neko->info->name + L".png", 2, true, true);
+                    Player::self->passiveNeko.insert(Player::self->passiveNeko.begin() + (ntmChoosing - 1), neko);
+                }
+                Player::self->SaveRoom();
+            }
+            menu->entity->SendMessage({"NekoUI :: Close"});
+            menu->entity->SendMessage({"NekoGridUI :: Close"});
         }
-        
-        nintMoodText = L"Счастье с:"; nintMoodColor = sf::Color::Green;
-        float chance = nintNeko->info->chance;
-        if (chance >= 0.09)          { nintRarityColor = sf::Color(200, 200, 200, 120); nintRarityText = L"Обычная"; }
-        else if (chance >= 0.05)     { nintRarityColor = sf::Color(106, 143, 203, 255); nintRarityText = L"Необычная"; }
-        else if (chance >= 0.008)    { nintRarityColor = sf::Color(87, 173, 98, 255); nintRarityText = L"Редкая"; }
-        else if (chance >= 0.005)    { nintRarityColor = sf::Color(218, 113, 114, 255); nintRarityText = L"Оч. редкая"; }
-        else if (chance >= 0.0012)   { nintRarityColor = sf::Color(188, 106, 167, 255); nintRarityText = L"Эпическая"; }
-        else if (chance >= 0.0006)   { nintRarityColor = sf::Color(244, 200, 68, 255); nintRarityText = L"Легенда"; }
-        else if (chance == 0    )    { nintRarityColor = sf::Color(244, 200, 68, 255); nintRarityText = L"Единственная"; }
-        else                         { nintRarityColor = sf::Color(255, 180, 180, 255); nintRarityText = L"Сверхлегенда"; }
-        /*if (chance >= 0.25)         { nintRarityColor = sf::Color(200, 200, 200, 120); nintRarityText = L"Обычная"; }
-        else if (chance >= 0.08)    { nintRarityColor = sf::Color(106, 143, 203, 255); nintRarityText = L"Необычная"; }
-        else if (chance >= 0.02)    { nintRarityColor = sf::Color(87, 173, 98, 255); nintRarityText = L"Редкая"; }
-        else if (chance >= 0.008)   { nintRarityColor = sf::Color(218, 113, 114, 255); nintRarityText = L"Оч. редкая"; }
-        else if (chance >= 0.004)   { nintRarityColor = sf::Color(188, 106, 167, 255); nintRarityText = L"Эпическая"; }
-        else if (chance >= 0.001)   { nintRarityColor = sf::Color(244, 200, 68, 255); nintRarityText = L"Легенда"; }
-        else if (chance == 0    )   { nintRarityColor = sf::Color(244, 200, 68, 255); nintRarityText = L"Единственная"; }
-        else                        { nintRarityColor = sf::Color(255, 180, 180, 255); nintRarityText = L"Сверхлегенда"; }*/
-        
-        sf::Texture* texture = ic::LoadTexture(L"Data/Neko/Person/" + nintNeko->info->name + L".png");
-        if (texture)
-        {
-            nintBodyNeko.setTexture(*texture, true);
-            nintBodyNeko.setOrigin(texture->getSize().x/2 + nintNeko->info->personSprite_offsetX, texture->getSize().y + nintNeko->info->personSprite_offsetY);
-        }
-        Resize(gs::width, gs::height);
+        /*else if (message.info == "NekoUI :: Show" && page == Page::neko)
+        else if (message.info == "NekoUI :: Close" && page == Page::neko) page = nintReturnTo;*/
     }
-    void Room::RecieveMessage(MessageHolder& message) {
-        if (message.info == "NovelComponents :: Novel :: Destroying") nintDontDrawPersonNeko = false; }
     
     
     
@@ -818,12 +682,11 @@ namespace NekoNinja
         room.menu = this;
         
         sf::Texture* texture = ic::LoadTexture(L"Data/Images/MainMenu1.jpg");
-        if (texture)
+        if ((spriteLoaded = texture))
         {
             background.setTexture(*texture);
             background.setOrigin(texture->getSize().x/2, texture->getSize().y/2);
         }
-        spriteLoaded = (texture != nullptr);
         
         if (Player::self->neko)
         {
@@ -833,16 +696,9 @@ namespace NekoNinja
                 nekoTextureName = Player::self->neko->info->name;
                 neko.setTexture(*texture);
                 neko.setOrigin(texture->getSize().x/2 + Player::self->neko->info->personSprite_offsetX, texture->getSize().y + Player::self->neko->info->personSprite_offsetY);
+                nekoRelScale = (static_cast<float>(gs::relativeHeight)/static_cast<float>(texture->getSize().y)) * Player::self->neko->info->novelScale;
             }
-            nekoSpriteLoaded = (texture != nullptr);
-        }
-        
-        texture = ic::LoadTexture(L"Data/Images/lootbox1.png");
-        if (texture)
-        {
-            texture->setSmooth(false);
-            lootboxSprite.setTexture(*texture);
-            lootboxSprite.setOrigin(texture->getSize().x/2, texture->getSize().y);
+            nekoSpriteLoaded = texture;
         }
         
         playButton.setFont(L"Pacifica.ttf");
@@ -852,11 +708,12 @@ namespace NekoNinja
         
         inventoryButton.setFont(L"Pacifica.ttf");
         inventoryButton.setCharacterSize(82);
-        inventoryButton.setString(L"Инвентарь");
+        inventoryButton.setString(L"Шкафчик");
         inventoryButton.valign = Valign::Bottom;
         lootboxesCountText.setFont(*fc::GetFont(L"Pacifica.ttf"));
         lootboxesCountText.setFillColor(sf::Color::White);
-        if (Player::self->lootboxes != 0) lootboxesCountText.setString(std::to_string(Player::self->lootboxes));
+        auto it = Inventory::map.find("Lootbox");
+        if (it != Inventory::map.end() && it->second->count != 0) lootboxesCountText.setString(std::to_string(it->second->count));
         lootboxesCircle.setFillColor(sf::Color(255,0,0,170));
         
         backButton.setFont(L"Pacifica.ttf");
@@ -919,6 +776,7 @@ namespace NekoNinja
         locationNameText.setOutlineColor(sf::Color::Black);
         
         
+        
         //ic::PreloadTexture(L"Data/Images/park.jpg", 0, false);
         ic::PreloadTexture(L"Data/Images/heartsshape.png", 0, false);
         ic::PreloadTexture(L"Data/Images/heart.png", 0, false);
@@ -935,7 +793,24 @@ namespace NekoNinja
         
         
         /*auto* novel = entity->AddComponent<VNLightComponents::Novel>();
+        novel->lines.push_back(L"blackend fade:0 message:no");
+        novel->lines.push_back(L"draw block");
+        novel->lines.push_back(L"wait 0.4");
+        novel->lines.push_back(L"background \"park.jpg\" ");
         
+        novel->lines.push_back(L"\"Добро пожаловать в NekoScience!\"");
+        novel->lines.push_back(L"show Vanilla left message:no");
+        novel->lines.push_back(L"show Chocola right");
+        novel->lines.push_back(L"show Maple center");
+        novel->lines.push_back(L"Maple \"Приветь, ня!~ :з\"");
+        
+        novel->lines.push_back(L"\"Йа диалог!!! Отень-отень-отень длинный диалог (на удивление, уфууфу) >3<\"");
+        
+        novel->lines.push_back(L"draw unblock");
+        novel->lines.push_back(L"disappear fade:0.5");*/
+        
+        
+        /*auto* novel = entity->AddComponent<VNLightComponents::Novel>();
         novel->lines.push_back(L"blackend");
         
         novel->lines.push_back(L"Flandre \"Йа неко!! >3<\"");
@@ -995,6 +870,7 @@ namespace NekoNinja
         if (!active) return;
         if (gs::ignoreEvent) return;
         
+        float yy; int i; bool deselect;
         switch (screen)
         {
             case Screen::main:
@@ -1022,7 +898,13 @@ namespace NekoNinja
                 }
                 else if (dialogueButton.PollEvent(event)) dialogueButton.setVisible(false);
                 else if (roomButton.PollEvent(event) && Player::self->roomUnlocked) { screen = Screen::room; room.Switch(true); }
-                else if (inventoryButton.PollEvent(event)) screen = Screen::inventory;
+                else if (inventoryButton.PollEvent(event)) {
+                    if (!gs::verticalOrientation)
+                    {
+                        auto it = Inventory::map.find("Lootbox");
+                        if (it != Inventory::map.end() && it->second->count != 0) entity->SendMessage({"Inventory :: SelectItem", it->second});
+                    }
+                    entity->SendMessage({"Inventory :: Show"}); screen = Screen::inventory; }
                 break;
                 
             case Screen::stage:
@@ -1043,7 +925,7 @@ namespace NekoNinja
                 else if (backButton.PollEvent(event)) { ic::DeleteImage(places[placeSelected]->background); screen = Screen::main; }
                 break;
                 
-            case Screen::inventory: if (backButton.PollEvent(event)) screen = Screen::main; break;
+            case Screen::inventory: break;
             case Screen::account: if (accountBackButton.PollEvent(event)) screen = Screen::main; break;
             case Screen::room: room.PollEvent(event); break;
             default: break;
@@ -1079,8 +961,6 @@ namespace NekoNinja
         if (lootboxesCircle.getGlobalBounds().left + lootboxesCircle.getGlobalBounds().width > gs::width)
             lootboxesCircle.setPosition(gs::width - lootboxesCircle.getGlobalBounds().width, lootboxesCircle.getPosition().y);
         lootboxesCountText.setPosition(lootboxesCircle.getGlobalBounds().left + lootboxesCircle.getGlobalBounds().width/2 - lootboxesCountText.getGlobalBounds().width/2 - 1*gs::scale, lootboxesCircle.getGlobalBounds().top + lootboxesCircle.getGlobalBounds().height/2 - lootboxesCountText.getGlobalBounds().height/2 - 7*gs::scale);
-        lootboxSprite.setPosition(width/2, height/2);
-        lootboxSprite.setScale(12*gs::scale, 12*gs::scale);
         
         dialogueButton.Resize(width, height);
         if (gs::width < dialogueButton.sprite.getGlobalBounds().width)
@@ -1108,7 +988,7 @@ namespace NekoNinja
             
             if (nekoSpriteLoaded)
             {
-                neko.setScale(1.5*gs::scScale, 1.5*gs::scScale);
+                neko.setScale(nekoRelScale*1.5*gs::scScale, nekoRelScale*1.5*gs::scScale);
                 if (neko.getGlobalBounds().height + 20*gs::scale > gs::height)
                     neko.setPosition(width/2, neko.getGlobalBounds().height + 20*gs::scale);
                 else neko.setPosition(width/2, height);
@@ -1221,13 +1101,9 @@ namespace NekoNinja
                 backButton.Draw(window);
                 break;
             case Screen::inventory:
-                if (spriteLoaded)
-                {
-                    window->draw(background);
-                    window->draw(backShape);
-                    window->draw(lootboxSprite);
-                }
-                backButton.Draw(window);
+                if (spriteLoaded) window->draw(background);
+                //window->draw(backShape);
+                //window->draw(lootboxSprite);
                 break;
             case Screen::room: room.Draw(window); break;
             default: break;
@@ -1237,10 +1113,11 @@ namespace NekoNinja
     }
     void MainMenu::RecieveMessage(MessageHolder& message)
     {
+        if (room.active) room.RecieveMessage(message);
         if (message.info == "NekoNinjaComponents :: NekoNinja :: Returning to the menu")
         {
-            active = true;
-            if (Player::self->lootboxes != 0) lootboxesCountText.setString(std::to_string(Player::self->lootboxes));
+            active = true; auto it = Inventory::map.find("Lootbox");
+            if (it != Inventory::map.end() && it->second->count != 0) lootboxesCountText.setString(std::to_string(it->second->count));
             
             dialogueButton.setVisible(true);
             int randomDialogue = rand() % 4;
@@ -1256,7 +1133,7 @@ namespace NekoNinja
             Resize(gs::width, gs::height);
             message = MessageHolder();
         }
-        else if (message.info == "NovelComponents :: Novel :: Destroying") { if (active) room.RecieveMessage(message); }
+        else if (message.info == "Inventory :: Close") { if (screen == Screen::inventory) screen = Screen::main; }
         else if (message.info == "NekoNinjaComponents :: Room :: Main neko changed")
         {
             ic::DeleteImage(L"Data/Neko/Person/" + nekoTextureName + L".png");
@@ -1266,10 +1143,11 @@ namespace NekoNinja
                 if (texture)
                 {
                     nekoTextureName = Player::self->neko->info->name;
-                    neko.setTexture(*texture);
+                    neko.setTexture(*texture, true);
                     neko.setOrigin(texture->getSize().x/2 + Player::self->neko->info->personSprite_offsetX, texture->getSize().y + Player::self->neko->info->personSprite_offsetY);
+                    nekoRelScale = (static_cast<float>(gs::relativeHeight)/static_cast<float>(texture->getSize().y)) * Player::self->neko->info->novelScale;
                 }
-                nekoSpriteLoaded = (texture != nullptr);
+                nekoSpriteLoaded = texture;
             }
             message = MessageHolder();
         }

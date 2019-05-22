@@ -20,11 +20,12 @@
 #include <SFML/Graphics.hpp>
 
 #include "../../Essentials/ResourcePath.hpp"
-#include "../../Engine/StaticMethods.hpp"
+#include "../../Engine/Settings.hpp"
 
 #include "../VNLightComponents/Novel.hpp"
 #include "NekoBase.hpp"
 #include "NekoNinjaSettings.hpp"
+#include "AbilityDatabaseCollection.hpp"
 
 using std::cin;
 using std::cout;
@@ -38,49 +39,31 @@ using namespace ns;
 
 namespace NekoNinja
 {
-    namespace adc
-    {
-        struct TheWorld : AbilityBase
-        {
-            TheWorld() : AbilityBase(L"The Warudo", L"Позволяет останавливать время на 2 секунды каждые 3 секунды.", false) { display = L"Зе Варудо"; }
-            
-            sf::CircleShape shape;
-            float radius{ 0.f };
-            
-            float elapsedSeconds{ 0.f };
-            float lastTimeMultiplier{ 1.f }, lastGetHarderTimeMultiplier{ 1.f }, lastVelocityMultiplier{ 1.f };
-            void OnAction() override;
-            void OnEnd() override;
-            void OnUpdate(const sf::Time& elapsedTime) override;
-            void OnDraw(sf::RenderWindow* window) override;
-        };
-        
-        struct AkakosBlessings : AbilityBase
-        {
-            AkakosBlessings() : AbilityBase(L"Akako's Blessing", L"Увеличивает получемое количество очков за ловлю кошечки на 3%.", true) { display = L"Благословение Акако"; }
-            void OnAction() override;
-        };
-    }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     void NekoDatabaseCollection_LoadNeko();
+    void NekoDatabaseCollection_SortNeko();
     namespace ndc /// NekoDatabaseCollection
     {
+        struct MezumiNakayano : NekoBase
+        {
+            MezumiNakayano() : NekoBase(L"MezumiNakayano", 1.f, 0, 135, 0,  {300, 60, 260, 140},  0.48f, 1.f, 1.f, true) { display = L"Мезуми Накаяно"; }
+        };
+        struct AmariMami : NekoBase
+        {
+            AmariMami() : NekoBase(L"AmariMami", 1.f, 0, 135, 0,  {105, 200, 120, 148},  0.59f, 1.f, 1.2f, true) { display = L"Амари Мами"; ability = new adc::ScratchClaw(); }
+        };
+        struct KashikoHola : NekoBase
+        {
+            KashikoHola() : NekoBase(L"KashikoHola", 1.f, 0, 150, 0,  {105, 200, 120, 148},  0.52f, 1.f, 1.2f, true) { display = L"Кашико Хола";  ability = new adc::MusicForAHeart(); }
+        };
+        
+        
         struct Shigure : NekoBase
         {
-            Shigure() : NekoBase(L"Shigure", 1.f, 0, 135, 0,     155, 30, 120, 70, true) { display = L"Шигуре"; ability = new adc::AkakosBlessings(); }
+            Shigure() : NekoBase(L"Shigure", 1.f, 0, 135, 0,  {300, 60, 240, 140},  0.48f, 1.f, 1.f, true) { display = L"Шигуре"; ability = new adc::AkakosBlessings(); }
         };
         struct Azuki : NekoBase
         {
-            Azuki() : NekoBase(L"Azuki", 1.f, 0, 150, 3,     115, 75, 98, 80) { display = L"Азуки"; }
+            Azuki() : NekoBase(L"Azuki", 1.f, 0, 150, 3,  {230, 150, 196, 160}) { display = L"Азуки"; ability = new adc::ScratchClaw(); }
             std::wstring RandomRoomDialogue() override
             {
                 int printRandom = rand() % 5;
@@ -94,19 +77,21 @@ namespace NekoNinja
                     default: return L""; break;
                 }
             }
+            void NovelTalkTo(Entity* entity) override;
         };
         struct Poop : NekoBase
         {
-            Poop() : NekoBase(L"Poop", 0.68f, 0, 140, 0,   20, 20, 20, 20) { display = L"Какашка"; }
+            static NekoBase* ptr;
+            Poop() : NekoBase(L"Poop", 0.f, 0, 140, 0,  {73, 258, 73, 73},  0.24f) { display = L"Какашка"; }
         };
         struct Cinnamon : NekoBase
         {
-            Cinnamon() : NekoBase(L"Cinnamon", 0.5f, 0, 120, 8,     144, 50, 144, 70) { display = L"Синнамон"; }
+            Cinnamon() : NekoBase(L"Cinnamon", 0.5f, 0, 120, 8,  {168, 80, 168, 120}) { display = L"Синнамон"; ability = new adc::UselessPassive(); }
             void NovelTalkTo(Entity* entity) override;
         };
         struct Maple : NekoBase
         {
-            Maple() : NekoBase(L"Maple", 0.4f, 0, 140, 10,    115, 90, 138, 100) { display = L"Мапл";
+            Maple() : NekoBase(L"Maple", 0.4f, 0, 140, 10,  {210, 160, 256, 180}) { display = L"Мапл";
                 ability = new adc::TheWorld(); }
             std::wstring RandomRoomDialogue() override
             {
@@ -125,7 +110,7 @@ namespace NekoNinja
         };
         struct Coconut : NekoBase
         {
-            Coconut() : NekoBase(L"Coconut", 0.3f, 0, 145, 12,    195, 75, 97, 80) { display = L"Кокнаут"; }
+            Coconut() : NekoBase(L"Coconut", 0.3f, 0, 145, 12,  {370, 130, 170, 140}) { display = L"Кокнаут"; }
             std::wstring RandomRoomDialogue() override
             {
                 int printRandom = rand() % 8;
@@ -145,7 +130,7 @@ namespace NekoNinja
         };
         struct Vanilla : NekoBase
         {
-            Vanilla() : NekoBase(L"Vanilla", 0.1f, 1, 130, 15,    185, 75, 167, 70) { display = L"Ванилла"; }
+            Vanilla() : NekoBase(L"Vanilla", 0.1f, 1, 130, 15,  {350, 130, 314, 120}) { display = L"Ванилла"; }
             std::wstring RandomRoomDialogue() override
             {
                 int printRandom = rand() % 5;
@@ -162,7 +147,7 @@ namespace NekoNinja
         };
         struct Chocola : NekoBase
         {
-            Chocola() : NekoBase(L"Chocola", 0.1f, 1, 140, 15, 168,    80, 160, 70) { display = L"Чокола"; personSprite_offsetY = 40; }
+            Chocola() : NekoBase(L"Chocola", 0.1f, 1, 140, 15,  {336, 160, 320, 140}) { display = L"Чокола"; personSprite_offsetY = 40; }
             std::wstring RandomRoomDialogue() override
             {
                 int printRandom = rand() % 5;
@@ -179,59 +164,59 @@ namespace NekoNinja
         };
         struct Miho : NekoBase
         {
-            Miho() : NekoBase(L"Miho", 0.07f, 0, 130, 5,     80, 92, 125, 130) { display = L"Михо"; }
+            Miho() : NekoBase(L"Miho", 0.07f, 0, 130, 5,  {160, 180, 250, 160}) { display = L"Михо"; }
         };
         struct Kay : NekoBase
         {
-            Kay() : NekoBase(L"Kay", 0.07f, 0, 140, 5,     80, 92, 125, 130) { display = L"Кей"; }
+            Kay() : NekoBase(L"Kay", 0.07f, 0, 140, 5,  {160, 180, 250, 160}) { display = L"Кей"; }
         };
         struct Kanade : NekoBase
         {
-            Kanade() : NekoBase(L"Kanade", 0.06f, 0, 110, 5,     74, 86, 108, 70) { display = L"Канаде"; }
+            Kanade() : NekoBase(L"Kanade", 0.06f, 0, 110, 5,  {140, 160, 200, 140}) { display = L"Канаде"; }
         };
         struct Sims : NekoBase
         {
-            Sims() : NekoBase(L"Sims", 0.02f,   0, 130, 0,     74, 86, 108, 70) { display = L"Симс"; }
+            Sims() : NekoBase(L"Sims", 0.02f,   0, 130, 0,  {140, 160, 200, 140}) { display = L"Симс"; }
         };
         struct Katyusha : NekoBase
         {
-            Katyusha() : NekoBase(L"Katyusha", 0.018f, 0, 140, 0,     74, 86, 108, 70) { display = L"Катюша"; }
+            Katyusha() : NekoBase(L"Katyusha", 0.018f, 0, 140, 0,  {140, 160, 200, 140}) { display = L"Катюша"; }
         };
         struct Riria : NekoBase
         {
-            Riria() : NekoBase(L"Riria", 0.007f, 0, 140, 0,     74, 86, 108, 70) { display = L"Ририя"; }
+            Riria() : NekoBase(L"Riria", 0.007f, 0, 140, 0,  {148, 180, 216, 140}) { display = L"Ририя"; }
         };
         struct Asuna : NekoBase
         {
-            Asuna() : NekoBase(L"Asuna", 0.006f, 1, 140, 0,     194, 120, 220, 135) { display = L"Асуна"; }
+            Asuna() : NekoBase(L"Asuna", 0.006f, 1, 140, 0,  {160, 60, 160, 75}) { display = L"Асуна"; }
         };
         struct Cthulhu : NekoBase
         {
-            Cthulhu() : NekoBase(L"Cthulhu", 0.006f, 1, 140, 0,     194, 120, 220, 135) { display = L"Ктулуху"; }
+            Cthulhu() : NekoBase(L"Cthulhu", 0.006f, 1, 140, 0,  {290, 180, 338, 224}) { display = L"Ктулуху"; }
         };
         struct MiyuEdelfelt : NekoBase
         {
-            MiyuEdelfelt() : NekoBase(L"Miyu Edelfelt", 0.005f, 1, 140, 0,     194, 120, 220, 135) { display = L"Мию Эделфелт"; }
+            MiyuEdelfelt() : NekoBase(L"MiyuEdelfelt", 0.005f, 1, 140, 0,  {194, 70, 220, 70}) { display = L"Мию Эделфелт"; }
         };
         struct Anchovy : NekoBase
         {
-            Anchovy() : NekoBase(L"Anchovy", 0.004f, 2, 140, 0,     112, 113, 50, 100) { display = L"Анчови"; }
+            Anchovy() : NekoBase(L"Anchovy", 0.004f, 2, 140, 0,  {220, 140, 100, 140}) { display = L"Анчови"; }
         };
         struct Darjeeling : NekoBase
         {
-            Darjeeling() : NekoBase(L"Darjeeling", 0.004f, 2, 140, 0,     112, 113, 50, 100) { display = L"Даржилинг"; }
+            Darjeeling() : NekoBase(L"Darjeeling", 0.004f, 2, 140, 0,  {220, 140, 100, 140}) { display = L"Даржилинг"; }
         };
         struct Altera : NekoBase
         {
-            Altera() : NekoBase(L"Altera", 0.004f, 2, 140, 0,     112, 113, 50, 100) { display = L"Алтера"; }
+            Altera() : NekoBase(L"Altera", 0.004f, 2, 140, 0,  {220, 140, 100, 140}) { display = L"Алтера"; }
         };
         struct Flandre : NekoBase
         {
-            Flandre() : NekoBase(L"Flandre", 0.003f, 2, 140, 0,     112, 113, 50, 100) { display = L"Фландре"; }
+            Flandre() : NekoBase(L"Flandre", 0.003f, 2, 140, 0,  {220, 140, 100, 140}) { display = L"Фландре"; }
         };
         struct ElizabethBathory : NekoBase
         {
-            ElizabethBathory() : NekoBase(L"Elizabeth Bathory", 0.002f, 2, 140, 0,     112, 113, 50, 1000) { display = L"Элизабет Бафори"; }
+            ElizabethBathory() : NekoBase(L"ElizabethBathory", 0.002f, 2, 140, 0,  {220, 140, 100, 140}) { display = L"Элизабет Бафори"; }
         };
     }
 }

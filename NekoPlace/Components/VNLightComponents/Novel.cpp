@@ -3,7 +3,7 @@
 //  NekoPlace
 //
 //  Created by Никита Исаенко on 24/02/2019.
-//  Copyright © 2019 Melanholy Hill. All rights reserved.
+//  Copyright © 2019 Melancholy Hill. All rights reserved.
 //
 
 #include "Novel.hpp"
@@ -38,6 +38,7 @@ namespace ns
                     }
                     else alpha = (sf::Int8)(maxAlpha * (currentTime / appearTime));
                     shape.setFillColor(sf::Color(shape.getFillColor().r, shape.getFillColor().g, shape.getFillColor().b, alpha));
+                    gs::requestWindowRefresh = true;
                     break;
                 case disappearing:
                     if (currentTime < disappearTime) currentTime += elapsedTime.asSeconds();
@@ -48,6 +49,7 @@ namespace ns
                     }
                     else alpha = (sf::Int8)(maxAlpha - (maxAlpha * (currentTime / disappearTime)));
                     shape.setFillColor(sf::Color(shape.getFillColor().r, shape.getFillColor().g, shape.getFillColor().b, alpha));
+                    gs::requestWindowRefresh = true;
                     break;
                 case deprecated: novelSystem->PopComponent(this); break;
                 default: break;
@@ -106,6 +108,7 @@ namespace ns
                     else
                         alpha = (sf::Int8)(maxAlpha * (currentTime / appearTime));
                     sprite.setColor(sf::Color(sprite.getColor().r, sprite.getColor().g, sprite.getColor().b, alpha));
+                    gs::requestWindowRefresh = true;
                     break;
                     
                 case disappearing:
@@ -119,6 +122,7 @@ namespace ns
                     else
                         alpha = (sf::Int8)(maxAlpha - (maxAlpha * (currentTime / disappearTime)));
                     sprite.setColor(sf::Color(sprite.getColor().r, sprite.getColor().g, sprite.getColor().b, alpha));
+                    gs::requestWindowRefresh = true;
                     break;
                     
                 case deprecated: novelSystem->PopComponent(this); break;
@@ -198,6 +202,7 @@ namespace ns
                         if (novel && sendMessageBack == atAppearance) novel->UnHold(this);
                     }
                     else alpha = (sf::Int8)(maxAlpha * (currentTime / appearTime));
+                    gs::requestWindowRefresh = true;
                     
                     text.setFillColor(sf::Color(text.getFillColor().r, text.getFillColor().g, text.getFillColor().b, alpha));
                     dialogueSprite.setColor(sf::Color(dialogueSprite.getColor().r, dialogueSprite.getColor().g, dialogueSprite.getColor().b, alpha));
@@ -220,6 +225,7 @@ namespace ns
                         if (novel && sendMessageBack == atDeprecated) novel->UnHold(this);
                     }
                     else alpha = (sf::Int8)(maxAlpha - (maxAlpha * (currentTime / disappearTime)));
+                    gs::requestWindowRefresh = true;
                     
                     text.setFillColor(sf::Color(text.getFillColor().r, text.getFillColor().g, text.getFillColor().b, alpha));
                     dialogueSprite.setColor(sf::Color(dialogueSprite.getColor().r, dialogueSprite.getColor().g, dialogueSprite.getColor().b, alpha));
@@ -428,6 +434,7 @@ namespace ns
                 if ((spriteLoaded = texture))
                 {
                     sprite.setTexture(*texture, true);
+                    relScale = (static_cast<float>(gs::relativeHeight)/static_cast<float>(texture->getSize().y)) * nekoInfo->novelScale;
                     
                     if (state == L"c" || state == L"close") { parallaxPower = gs::defaultParallaxClose; scaleX = scaleY = 2; }
                     else if (state == L"f" || state == L"far") { parallaxPower = gs::defaultParallaxFar; scaleX = scaleY = 1; }
@@ -447,7 +454,7 @@ namespace ns
         {
             if (spriteLoaded)
             {
-                sprite.setScale(scaleX * (doParallax ? (1 + parallaxPower) : 1) * gs::scScale, scaleY * (doParallax ? (1 + parallaxPower) : 1) * gs::scScale);
+                sprite.setScale(relScale * scaleX * (doParallax ? (1 + parallaxPower) : 1) * gs::scScale, relScale * scaleY * (doParallax ? (1 + parallaxPower) : 1) * gs::scScale);
                 sprite.setOrigin((nekoInfo ? nekoInfo->personSprite_offsetX : 0) + sprite.getLocalBounds().width/2, (nekoInfo ? nekoInfo->personSprite_offsetY : 0) + ((sprite.getLocalBounds().height > height/sprite.getScale().y) ? height/sprite.getScale().y : sprite.getLocalBounds().height));
                 
                 switch (position)
@@ -480,6 +487,7 @@ namespace ns
                     }
                     else alpha = (sf::Int8)(maxAlpha * (currentTime / appearTime));
                     sprite.setColor(sf::Color(sprite.getColor().r, sprite.getColor().g, sprite.getColor().b, alpha));
+                    gs::requestWindowRefresh = true;
                     break;
                     
                 case disappearing:
@@ -493,6 +501,7 @@ namespace ns
                     else
                         alpha = (sf::Int8)(maxAlpha - (maxAlpha * (currentTime / disappearTime)));
                     sprite.setColor(sf::Color(sprite.getColor().r, sprite.getColor().g, sprite.getColor().b, alpha));
+                    gs::requestWindowRefresh = true;
                     break;
                 case deprecated: novelSystem->PopComponent(this); break;
                 default: break;
@@ -523,10 +532,10 @@ namespace ns
         
         
         Novel::Novel() { }
-        void Novel::Init() { gs::ignoreEvent = true; }
+        void Novel::Init() { gs::PushInterface(this); }
         void Novel::Destroy()
         {
-            gs::ignoreEvent = false;
+            gs::RemoveInterface(this);
             gs::ignoreDraw = false;
             entity->SendMessage(MessageHolder("NovelComponents :: Novel :: Destroying"));
             layers.clear();
@@ -537,7 +546,7 @@ namespace ns
             while (!eof && onHold.empty())
             {
                 command.Command(lines.front()); lines.pop_front();
-                eof = lines.empty();
+                eof = lines.empty(); gs::requestWindowRefresh = true;
                 
                 bool backgroundAddingMode{ false };
                 if (nss::Command(command, L"//")) { /* oh, that's a comment... */ }
@@ -701,8 +710,8 @@ namespace ns
                     else
                         cout << "Warning :: NovelComponent :: Couldn't init \"fade\" command for " << disappearTime << " seconds." << endl;
                 }
-                else if (nss::Command(command, L"event block")) gs::ignoreEvent = true;
-                else if (nss::Command(command, L"event unblock")) gs::ignoreEvent = false;
+                /*else if (nss::Command(command, L"event block")) gs::ignoreEvent = true;
+                else if (nss::Command(command, L"event unblock")) gs::ignoreEvent = false;*/
                 else if (nss::Command(command, L"draw block")) gs::ignoreDraw = true;
                 else if (nss::Command(command, L"draw unblock")) gs::ignoreDraw = false;
                 else if (nss::Command(command, L"blackend hide"))

@@ -127,10 +127,15 @@ namespace NekoNinja
                     }
                 }
             }
-        for (auto& n : nl::neko) if (n->tamed) rl::neko.emplace_back(new NekoEntity(n, rl::neko.size()));
-        if (rl::neko.size() > 1) roomUnlocked = true;
+        for (auto& n : nl::neko) if (n->tamed) {
+            rl::neko.emplace_back(new NekoEntity(n, rl::neko.size()));
+            rl::nekolist.emplace_back(rl::neko.back());
+            if (n->chanceAfterTamed >= 0) n->possibility = n->chanceAfterTamed; }
+        if (rl::neko.size() > 1) { NekoDatabaseCollection_SortNeko(); roomLibrary::sortlist(); roomUnlocked = true; }
+        //for (auto& n : nl::neko) cout << " " << n->chance << " " << n->possibility << " " << utf8(n->name) << endl;
         if (level >= 6) activeNekoUnlocked = true;
-        if (level >= 20) ++passiveNekosUnlocked;
+        if (level >= 16) ++passiveNekosUnlocked;
+        if (level >= 25) ++passiveNekosUnlocked;
         if (level >= 35) ++passiveNekosUnlocked;
         
         std::wifstream wif2;
@@ -142,11 +147,52 @@ namespace NekoNinja
         wif2.imbue(std::locale(std::locale(), new std::codecvt_utf8<wchar_t>));
         if (wif2.is_open())
         {
-            std::wstring line; std::getline(wif2, line); bool found{ false };
-            for (auto it = rl::neko.begin(); it != rl::neko.end() && !found; ++it)
-                if ((*it)->info->name == line) { neko = (*it); found = true; }
+            std::wstring line;
+            for (int i = 0; i < 4 && !wif2.eof(); ++i)
+            {
+                std::getline(wif2, line); bool found{ false };
+                for (auto it = rl::neko.begin(); it != rl::neko.end() && !found; ++it)
+                    if ((*it)->info->name == line)
+                    {
+                        if (i == 0) neko = (*it); else passiveNeko.push_back(*it);
+                        (*it)->highlightedDuringSelection = found = true;
+                    }
+            }
         }
         if (!neko && rl::neko.size()) { neko = (rl::neko.front()); SaveRoom(); }
+        
+        
+        
+        
+        ItemDatabaseCollection_LoadItems();
+        std::wstring itemsFolderPath = base::utf16(documentsPath()) + L"Items.nekoninja";
+        if (base::FileExists(itemsFolderPath))
+        {
+            std::wifstream wifi;
+#ifdef _WIN32
+            wifi.open(itemsFolderPath);
+#else
+            wifi.open(base::utf8(itemsFolderPath));
+#endif
+            wifi.imbue(std::locale(std::locale(), new std::codecvt_utf8<wchar_t>));
+            
+            if (wifi.is_open())
+            {
+                std::wstring line; nss::CommandSettings command;
+                while (!wifi.eof())
+                {
+                    std::getline(wifi, line); command.Command(line);
+                    int count = base::atoi(nss::ParseUntil(command, L' '));
+                    if (count)
+                    {
+                        std::wstring str = nss::ArgumentAsString(command);
+                        std::string sname = utf8(str);
+                        Inventory::Push(sname, static_cast<unsigned int>(count));
+                    }
+                }
+                Inventory::Sort();
+            }
+        }
     }
     void Player::SaveRoom()
     {
@@ -161,7 +207,11 @@ namespace NekoNinja
         wof.open(base::utf8(roomPath));
 #endif
         wof.imbue(std::locale(std::locale(), new std::codecvt_utf8<wchar_t>));
-        if (wof.is_open()) { if (neko) wof << neko->info->name << endl; }
+        if (wof.is_open())
+        {
+            if (neko) wof << neko->info->name << endl;
+            if (neko && !passiveNeko.empty()) for (auto& p : passiveNeko) wof << p->info->name << endl;
+        }
     }
     void Player::SaveData()
     {
@@ -225,6 +275,24 @@ namespace NekoNinja
                 }
                 wof.close();
             }
+    }
+    void Player::SaveItems()
+    {
+        if (!inited) Init();
+        if (!base::FileExists(settingsPath))
+            base::CreateDirectory(base::utf16(documentsPath()));
+        
+        std::wstring itemsFolderPath = base::utf16(documentsPath()) + L"Items.nekoninja";
+        std::wofstream wof;
+#ifdef _WIN32
+        wof.open(itemsFolderPath);
+#else
+        wof.open(base::utf8(itemsFolderPath));
+#endif
+        wof.imbue(std::locale(std::locale(), new std::codecvt_utf8<wchar_t>));
+        if (wof.is_open())
+            for (auto& i : Inventory::list)
+                wof << i->count << L" " << utf16(i->name) << endl;
     }
     void Player::ResetNekos()
     {

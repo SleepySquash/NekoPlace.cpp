@@ -17,7 +17,8 @@ using std::list;
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 
-#include "StaticMethods.hpp"
+#include "Settings.hpp"
+#include "MessageHolder.hpp"
 
 using std::cout;
 using std::cin;
@@ -28,9 +29,8 @@ namespace ns
     class NovelObject;
     class NovelSystem;
     
-    class NovelObject
+    struct NovelObject : MessageSender
     {
-    public:
         NovelSystem* novelSystem{ nullptr };
         bool offline{ false };
         int priority{ 0 };
@@ -42,15 +42,16 @@ namespace ns
         virtual void Resize(unsigned int width, unsigned int height);
         virtual void PollEvent(sf::Event& event);
         virtual void Destroy();
+        virtual void ReceiveMessage(MessageHolder& message);
+        void SendMessage(MessageHolder message) override;
         void SetPriority(int priority);
         void ChangePriority(int priority);
         void SetNovelSystem(NovelSystem* novelSystem);
         NovelSystem* GetNovelSystem();
     };
     
-    class NovelSystem
+    struct NovelSystem : MessageSender
     {
-    public:
         list<NovelObject*> objects;
         
         NovelSystem();
@@ -59,8 +60,15 @@ namespace ns
         void Resize(unsigned int width, unsigned int height);
         void PollEvent(sf::Event& event);
         void PopComponent(NovelObject* component);
+        void SendMessage(MessageHolder message) override;
+        void ReceiveMessage(MessageHolder& message);
         void clear();
         void ChangePriorityOf(NovelObject* component, int priority);
+        
+        list<NovelObject*>::const_iterator cbegin() const;
+        list<NovelObject*>::const_iterator cend() const;
+        list<NovelObject*>::iterator begin();
+        list<NovelObject*>::iterator end();
         
         template<typename T, typename ...Args> T* AddComponent(Args... args)
         {

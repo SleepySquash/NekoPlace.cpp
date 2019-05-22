@@ -14,7 +14,7 @@ namespace NekoNinja
     Popup::Popup(const std::wstring& title, const std::wstring& desc) : title(title), desc(desc) { }
     void Popup::Init()
     {
-        gs::ignoreEvent = true;
+        gs::PushInterface(this);
         
         button.setCharacterSize(100);
         button.setString(L"OK");
@@ -32,8 +32,8 @@ namespace NekoNinja
         backfade.setFillColor(sf::Color(0,0,0,120));
         line.setFillColor(sf::Color(255,255,255,120));
     }
-    void Popup::Destroy() { gs::ignoreEvent = false; }
-    void Popup::PollEvent(sf::Event& event) { if (button.PollEvent(event)) { entity->PopComponent(this); } }
+    void Popup::Destroy() { gs::RemoveInterface(this); }
+    void Popup::PollEvent(sf::Event& event) { if (gs::isActiveInterface(this) && button.PollEvent(event)) { entity->PopComponent(this); } }
     void Popup::Resize(unsigned int width, unsigned int height)
     {
         backfade.setSize({(float)width, (float)height});

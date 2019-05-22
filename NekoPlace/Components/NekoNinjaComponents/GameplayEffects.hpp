@@ -20,7 +20,9 @@
 
 #include "../../Essentials/ResourcePath.hpp"
 #include "../../Engine/NovelSystem.hpp"
-#include "../../Engine/StaticMethods.hpp"
+#include "../../Engine/Settings.hpp"
+#include "../../Engine/Collectors.hpp"
+#include "EventBase.hpp"
 
 using std::cin;
 using std::cout;
@@ -37,8 +39,9 @@ namespace NekoNinja
         sf::Sprite sprite;
         int alpha{ 255 };
         float elapsed{ 0.f };
+        bool reverse;
         
-        HeartsShape(float x, float y, float scale);
+        HeartsShape(float x, float y, float scale, bool reverse);
         void Init() override;
         void Update(const sf::Time& elapsedTime) override;
         void Draw(sf::RenderWindow* window) override;
@@ -67,6 +70,20 @@ namespace NekoNinja
         CriticalHitText(float x, float y);
         void Init() override;
         void Update(const sf::Time& elapsedTime) override;
+        void Draw(sf::RenderWindow* window) override;
+    };
+    
+    struct ScratchScratch : NovelObject
+    {
+        sf::Text text;
+        int alpha{ 255 };
+        float elapsed{ 0.f };
+        bool fontLoaded{ false };
+        
+        ScratchScratch();
+        void Init() override;
+        void Update(const sf::Time& elapsedTime) override;
+        void Resize(unsigned int width, unsigned int height) override;
         void Draw(sf::RenderWindow* window) override;
     };
 }

@@ -10,12 +10,8 @@
 
 namespace NekoNinja
 {
-    float NekoObject::gravity = 0.19f * 60 * 60;
-    float NekoObject::yStartVelocity = -17.f * 60;
-    int NekoObject::yStartRandomVelocity = 4*60;
-    int NekoObject::xStartRandomVelocity = 6*60;
-    
     Controller* NekoObject::control = nullptr;
+    GUIOverlay* NekoObject::gui = nullptr;
     unsigned int* NekoObject::tamedArray = nullptr;
     
     
@@ -24,9 +20,9 @@ namespace NekoNinja
     void SceneBackground::Init()
     {
         sf::Texture* texture = ic::LoadTexture(imagePath);
-        if (texture != nullptr)
+        if ((spriteLoaded = texture))
         {
-            sprite.setTexture(*texture); spriteLoaded = true;
+            sprite.setTexture(*texture, true);
             sprite.setOrigin(texture->getSize().x/2, texture->getSize().y/2);
         }
     }
@@ -42,10 +38,7 @@ namespace NekoNinja
             sprite.setPosition(width/2, height/2);
         }
     }
-    void SceneBackground::Draw(sf::RenderWindow* window)
-    {
-        if (spriteLoaded) window->draw(sprite);
-    }
+    void SceneBackground::Draw(sf::RenderWindow* window) { if (spriteLoaded) window->draw(sprite); }
     
     
     
@@ -61,7 +54,7 @@ namespace NekoNinja
         scoreText.setCharacterSize(15);
         scoreText.setString(L"0");
         scoreText.setFont(*fc::GetFont(L"Pacifica.ttf"));
-        fontLoaded = (scoreText.getFont() != nullptr);
+        fontLoaded = scoreText.getFont();
         
         strikeText.setFillColor(sf::Color::White);
         strikeText.setOutlineColor(sf::Color::Black);
@@ -102,7 +95,7 @@ namespace NekoNinja
         strikeText.setCharacterSize(60);
         pauseText.setString(L"ПАУЗА");
         pauseText.setFont(*fc::GetFont(L"Pacifica.ttf"));
-        fontLoaded = (pauseText.getFont() != nullptr);
+        fontLoaded = (pauseText.getFont());
         
         resultsText.setFillColor(sf::Color::White);
         resultsText.setOutlineColor(sf::Color::Black);
@@ -110,7 +103,7 @@ namespace NekoNinja
         resultsText.setCharacterSize(60);
         resultsText.setString(L"ИТОГИ");
         resultsText.setFont(*fc::GetFont(L"Pacifica.ttf"));
-        fontLoaded = (resultsText.getFont() != nullptr);
+        fontLoaded = (resultsText.getFont());
         
         helperText.setFillColor(sf::Color::White);
         helperText.setOutlineColor(sf::Color::Black);
@@ -118,7 +111,7 @@ namespace NekoNinja
         helperText.setCharacterSize(48);
         helperText.setString(L"Результаты:");
         helperText.setFont(*fc::GetFont(L"Pacifica.ttf"));
-        fontLoaded = (helperText.getFont() != nullptr);
+        fontLoaded = (helperText.getFont());
         
         resultsOkButton.setFont(L"Pacifica.ttf");
         resultsOkButton.setString(L"OK");
@@ -153,6 +146,7 @@ namespace NekoNinja
             nekoButton.setTexture(L"Data/Neko/Avatar/" + Player::self->neko->info->name + L".png");
             nekoButton.halign = Halign::Right;
             nekoButton.valign = Valign::Bottom;
+            if (nekoButton.sprite.getTexture()) nekoButton.setScale(168.f / nekoButton.sprite.getTexture()->getSize().x);
             nekoButShape.setFillColor(sf::Color(Player::self->neko->info->color.r, Player::self->neko->info->color.g, Player::self->neko->info->color.b, 150));
             nekoButShape.setOutlineColor(sf::Color::White);
             
@@ -168,9 +162,14 @@ namespace NekoNinja
             if (!scoresAlreadyColored && control->score > Player::self->topScore) {
                 scoreText.setFillColor(sf::Color(255, 223, 0, 255)); scoresAlreadyColored = true; }
             strikeText.setString(std::to_string(control->strike) + "x");
-            if (control->abilityElapsedCooldown && !control->abilityIsUp) nekoButText.setString(std::to_string((int)control->abilityElapsedCooldown));
+            if (control->abilityCooldownGUI && !control->abilityIsUp) nekoButText.setString(std::to_string(control->abilityCooldownGUI));
         }
         system.Update(elapsedTime);
+        if (newNekoReadNovels && !gs::ignoreEvent)
+        {
+            gs::ignoreEvent = true; (*newNekoIterator)->NovelIntroduction(control->entity);
+            ++newNekoIterator; if (newNekoIterator == newNekoList.end()) newNekoReadNovels = false;
+        }
     }
     void GUIOverlay::Resize(unsigned int width, unsigned int height)
     {
@@ -273,7 +272,7 @@ namespace NekoNinja
             yy += expShape.getGlobalBounds().height + 5*gs::scaley;
             
             helperText.setCharacterSize((unsigned int)(64 * gs::scale));
-            helperText.setString(L"Доступно лутбоксов!");
+            helperText.setString(L"Нашёл лутбоксов!");
             helperText.setPosition(gs::width/2 - helperText.getGlobalBounds().width/2, yy);
             yy += helperText.getGlobalBounds().height + 5*gs::scaley;
             
@@ -330,7 +329,7 @@ namespace NekoNinja
         
         window->draw(nekoButShape);
         if (control->abilityIsUp) { nekoButton.sprite.setColor(sf::Color::Green); nekoButton.Draw(window); }
-        else if (control->abilityElapsedCooldown) {
+        else if (control->abilityCooldownGUI) {
             nekoButton.sprite.setColor(sf::Color(150,150,150,255)); nekoButton.Draw(window); window->draw(nekoButText); }
         else { nekoButton.sprite.setColor(sf::Color::White); nekoButton.Draw(window); }
         
@@ -394,7 +393,7 @@ namespace NekoNinja
                     window->draw(helperText); yy += expShape.getGlobalBounds().height + 5*gs::scaley;
                     
                     helperText.setCharacterSize((unsigned int)(64 * gs::scale));
-                    helperText.setString(L"Доступно " + std::to_wstring(Player::self->level - prevLevel) + L" лутбоксов!");
+                    helperText.setString(L"Нашёл " + std::to_wstring(Player::self->level - prevLevel) + L" лутбоксов!");
                     if (helperText.getGlobalBounds().width + 4*gs::scale > resultsShape.getSize().x)
                         helperText.setScale(resultsShape.getSize().x/(helperText.getGlobalBounds().width + 4*gs::scale), helperText.getScale().y);
                     helperText.setPosition(gs::width/2 - helperText.getGlobalBounds().width/2, yy);
@@ -479,7 +478,7 @@ namespace NekoNinja
     }
     void GUIOverlay::PollEvent(sf::Event& event)
     {
-        if (!gs::isPause && control && !control->isGameOver && control->ability && !control->abilityIsUp && control->abilityElapsedCooldown == 0 && nekoButton.PollEvent(event)) control->ability->OnAction();
+        if (!gs::isPause && control && !control->isGameOver && control->ability && !control->abilityIsUp && control->abilityElapsedCooldown == 0 && nekoButton.PollEvent(event)) control->ActivateAbility();
         else if (event.type == sf::Event::MouseButtonReleased || event.type == sf::Event::TouchEnded)
         {
             if (control->isGameOver)
@@ -491,7 +490,27 @@ namespace NekoNinja
                         drawResults = false; drawNewNeko = newNekoAvailable; resultsOkButton.setString(L"OK");
                         resultsOkButton.setPosition(gs::width/2, gs::height - resultsShape.getPosition().y - 42*gs::scale);
                     }
-                } else if (drawNewNeko) { if (resultsOkButton.PollEvent(event)) { drawNewNeko = false; } }
+                }
+                else if (drawNewNeko)
+                {
+                    if (resultsOkButton.PollEvent(event)) { drawNewNeko = false; }
+                    else
+                    {
+                        sf::Vector2i dot;
+                        if (event.type == sf::Event::MouseButtonReleased) dot = {event.mouseButton.x, event.mouseButton.y};
+                        else dot = {event.touch.x, event.touch.y};
+                        
+                        float yy = results_yyNeko + 2*gs::scaley;
+                        for (auto& neko : newEntityList)
+                        {
+                            newNekoShape.setSize({newNekoShape.getSize().x, 90*gs::scaley});
+                            newNekoShape.setPosition(newNekoShape.getPosition().x, yy);
+                            if (newNekoShape.getGlobalBounds().contains(dot.x, dot.y)) {
+                                control->entity->SendMessage({"NekoUI :: SelectNeko", neko}); control->entity->SendMessage({"NekoUI :: Look"}); break; }
+                            yy += 92*gs::scaley;
+                        }
+                    }
+                }
                 else
                 {
                     if (menuLeaveButton.PollEvent(event)) control->ReturnToMenu();
@@ -524,16 +543,27 @@ namespace NekoNinja
     }
     void GUIOverlay::GameOver()
     {
-        for (unsigned long i = nl::neko.size() - 1; i >= 0; --i)
+        newNekoAvailable = newNekoReadNovels = (newNekoList.size() != 0);
+        if (newNekoAvailable) std::sort(newNekoList.begin(), newNekoList.end(), [](const NekoBase* a, const NekoBase* b) { return a->possibility < b->possibility; });
+        for (auto& n : newNekoList)
+        {
+            rl::neko.emplace_back(new NekoEntity(n, rl::neko.size()));
+            rl::nekolist.emplace_back(rl::neko.back());
+            newEntityList.emplace_back(rl::neko.back());
+            if (n->chanceAfterTamed >= 0) n->possibility = n->chanceAfterTamed;
+        }
+        /*for (unsigned long i = nl::neko.size() - 1; i >= 0; --i)
         {
             if (!nl::neko[i]->tamed && NekoObject::tamedArray[i])
             {
                 newNekoList.push_back(nl::neko[i]);
                 rl::neko.emplace_back(new NekoEntity(nl::neko[i], rl::neko.size()));
+                rl::nekolist.emplace_back(rl::neko.back());
+                if (nl::neko[i]->chanceAfterTamed >= 0) nl::neko[i]->possibility = nl::neko[i]->chanceAfterTamed;
             }
             if (i == 0) break;
-        }
-        newNekoAvailable = (newNekoList.size() != 0);
+        }*/
+        if (newNekoReadNovels) newNekoIterator = newNekoList.begin();
         if (newNekoAvailable && !Player::self->roomUnlocked) { Player::self->roomUnlocked = true; control->entity->AddComponent<Popup>(L"Новая кошкодевочка!", L"Теперь Вам доступна комната с кошкодевочками! Нажмите в главном меню на Чоколу справа, чтобы попасть туда."); }
         
         if (newNekoAvailable) resultsOkButton.setString(L"ДАЛЕЕ"); else resultsOkButton.setString(L"OK");
@@ -560,30 +590,48 @@ namespace NekoNinja
     
     void NekoObject::Init()
     {
-        float possibility = (rand() % 10000) / 10000.f;
-        unsigned long last = 0;
-        for (; last < nl::neko.size(); ++last)
-            if (nl::neko[last]->chance < possibility) break;
-        
-        do { nekoIndex = rand() % last; } while (nl::neko[nekoIndex]->difficultyAvailable > control->currentDifficulty);
-        nekoInfo = nl::neko[nekoIndex];
+        int poopPossibility = rand() % 100;
+        if (poopPossibility <= nns::poopPosibility) nekoInfo = ndc::Poop::ptr;
+        else
+        {
+            float possibility = (rand() % 10000) / 10000.f;
+            unsigned long last = 0;
+            for (; last < nl::neko.size(); ++last)
+                if (nl::neko[last]->possibility < possibility) break;
+            
+            do { nekoIndex = rand() % last; } while (nl::neko[nekoIndex]->difficultyAvailable > control->currentDifficulty);
+            nekoInfo = nl::neko[nekoIndex];
+            newneko = (!nekoInfo->tamed && nekoInfo->levelNeeded <= Player::self->level);
+        }
         
         x = rand() % gs::relativeWidth;
-        y = gs::relativeHeight;
-        
         if (x < gs::relativeWidth/13) x = gs::relativeWidth/13;
         if (x > gs::relativeWidth - gs::relativeWidth/13) x = gs::relativeWidth - gs::relativeWidth/13;
+        if (x < gs::relativeWidth/2) xVelocity = (rand() % nns::xStartRandomVelocity); else xVelocity = -(rand() % nns::xStartRandomVelocity);
         
-        if (x < gs::relativeWidth/2) xVelocity = (rand() % xStartRandomVelocity); else xVelocity = -(rand() % xStartRandomVelocity);
-        yVelocity = yStartVelocity + (rand() % yStartRandomVelocity);
+        bool defaultSpawning = !(offsetYYUp = ((nns::spawnCoordsYYmode == nns::yySpawnMode::top) || (nns::spawnCoordsYYmode == nns::yySpawnMode::random && nns::randomSpawnYYmode)));
+        if (nns::spawnCoordsYYmode == nns::yySpawnMode::random) nns::randomSpawnYYmode = !nns::randomSpawnYYmode;
+        if (defaultSpawning) { yVelocity = nns::yStartVelocity + (rand() % nns::yStartRandomVelocity); gravity = nns::gravity; }
+        else { yVelocity = -nns::yStartVelocity - (rand() % nns::yStartRandomVelocity); gravity = -nns::gravity; }
         
         sf::Texture* texture = ic::LoadTexture(L"Data/Neko/Chibi/" + nekoInfo->name + L".png");
-        if (texture != nullptr)
+        if (texture)
         {
             sprite.setTexture(*texture);
             halfTheWidth = texture->getSize().x / 2;
-            sprite.setOrigin(halfTheWidth, 0);
+            sprite.setOrigin(halfTheWidth, (defaultSpawning ? 0 : (spriteHeight = texture->getSize().y)));
+            relScale = (static_cast<float>(gs::relativeHeight)/static_cast<float>(texture->getSize().y)) * nekoInfo->chibiScale;
+            hitboxScale = static_cast<float>(texture->getSize().y) / (static_cast<float>(gs::relativeHeight));
+            
+            /*if (nekoInfo->name == L"AmariMami")
+            {
+                cout << "nekoInfo->offsets.left: " << nekoInfo->offsets.left << endl;
+                cout << "1/rawScale: " << hitboxScale << "   nekoScale: " << relScale << "  nekoInfo->chibiScale: " << nekoInfo->chibiScale << endl;
+                cout << "sprite.getGlobalBounds().width: " << sprite.getGlobalBounds().width << endl;
+                cout << "nekoInfo->offsets.left / rawScale: " << nekoInfo->offsets.left * hitboxScale << endl;
+            }*/
         }
+        y = (defaultSpawning) ? gs::relativeHeight : 0;
     }
     void NekoObject::Destroy()
     {
@@ -596,71 +644,101 @@ namespace NekoNinja
     }
     void NekoObject::Update(const sf::Time& elapsedTime)
     {
-        float yVelocity_prev = yVelocity;
+        //float yVelocity_prev = yVelocity;
         yVelocity += gravity * elapsedTime.asSeconds() * nns::velocityMultiplier;
-        if (y > (gs::relativeHeight + 100)) offline = true;
+        if (y > (gs::relativeHeight + 100) || y < (-5 - spriteHeight)) offline = true;
         
         x += xVelocity * elapsedTime.asSeconds() * nns::velocityMultiplier;
-        y += 0.5 * (yVelocity + yVelocity_prev) * elapsedTime.asSeconds() * nns::velocityMultiplier;
+        y += yVelocity * elapsedTime.asSeconds() * nns::velocityMultiplier;
+        //y += 0.5 * (yVelocity + yVelocity_prev) * elapsedTime.asSeconds() * nns::velocityMultiplier;
         
         sprite.setPosition(x * gs::scalex, y * gs::scaley);
     }
-    void NekoObject::CheckInterception(sf::Vector2<int>& point)
+    void NekoObject::CheckInterception(const sf::Vector2<int>& point)
     {
-        if (control->isGameOver) return;
-        
-        sf::FloatRect rect = sprite.getGlobalBounds();
-        rect.left += nekoInfo->offsets.left * sprite.getScale().x;
-        rect.width -= nekoInfo->offsets.width * sprite.getScale().x;
-        rect.top += nekoInfo->offsets.top * sprite.getScale().x;
-        rect.height -= nekoInfo->offsets.height * sprite.getScale().x;
-        tamed = rect.contains(point.x, point.y);
-        if (tamed)
+        if (control->isGameOver || tamed) return;
+        hitbox = sprite.getGlobalBounds();
+        hitbox.left += nekoInfo->offsets.left * sprite.getScale().x * hitboxScale;
+        hitbox.width -= (nekoInfo->offsets.width + nekoInfo->offsets.left) * sprite.getScale().x * hitboxScale;
+        hitbox.top += nekoInfo->offsets.top * sprite.getScale().x * hitboxScale;
+        hitbox.height -= (nekoInfo->offsets.height + nekoInfo->offsets.top) * sprite.getScale().x * hitboxScale;
+        if (hitbox.contains(point.x, point.y)) Tame();
+    }
+    void NekoObject::Tame()
+    {
+        if (tamed) return; newneko = false; tamed = true;
+        sprite.setColor(sf::Color(255,255,255,160));
+        if (nekoInfo->name == L"Poop")
         {
-            sprite.setColor(sf::Color(255,255,255,160));
-            if (nekoInfo->name == L"Poop")
+            if (control->strike > control->maxStrike) control->maxStrike = control->strike;
+            control->strike = 0;
+            if (control->score < 10 * nns::scoreMultiplier) control->score = 0;
+            else control->score -= 10 * nns::scoreMultiplier;
+            --control->lifes; if (control->lifes == 0) control->GameOver();
+        }
+        else
+        {
+            float possibility = (rand() % 10000) / 10000.f;
+            if (possibility <= control->criticalHitPossibility)
             {
-                if (control->strike > control->maxStrike) control->maxStrike = control->strike;
-                control->strike = 0;
-                if (control->score < 10 * nns::scoreMultiplier) control->score = 0;
-                else control->score -= 10 * nns::scoreMultiplier;
-                --control->lifes; if (control->lifes == 0) control->GameOver();
+                control->score += 100 * nns::scoreMultiplier;
+                control->gui.system.AddComponent<CriticalHitText>(x, y);
             }
-            else
+            else control->score += 10 * nns::scoreMultiplier;
+            ++control->nekoCounter; control->UpdateCooldownCounter();
+            
+            if (control->lifeScore <= control->score) {
+                control->lifeScore += nns::lifeScoreDelta;
+                if (control->lifes != control->maxlifes) ++control->lifes; }
+            ++control->strike; ++control->comboCounter; control->elapsedCombo = 0.f;
+            control->lastNekoPosition = { x, y };
+            
+            if (nekoInfo->levelNeeded <= Player::self->level) {
+                if (!nekoInfo->tamed) { gui->newNekoList.push_back(nekoInfo); nekoInfo->tamed = true; }
+                ++tamedArray[nekoIndex];
+                control->system.AddComponent<HeartsShape>(x, y, sprite.getScale().x, offsetYYUp); }
+            sf::SoundBuffer* buffer = sc::LoadSound(L"Data/Neko/Nya/" + nekoInfo->name + L".ogg");
+            if (buffer)
             {
-                float possibility = (rand() % 10000) / 10000.f;
-                if (possibility <= control->criticalHitPossibility)
-                {
-                    control->score += 100 * nns::scoreMultiplier;
-                    control->gui.system.AddComponent<CriticalHitText>(x, y);
-                }
-                else control->score += 10 * nns::scoreMultiplier;
-                
-                if (control->lifeScore <= control->score) {
-                    control->lifeScore += 1000;
-                    if (control->lifes != control->maxlifes) ++control->lifes; }
-                ++control->strike; ++control->comboCounter; control->elapsedCombo = 0.f;
-                control->lastNekoPosition = { x, y };
-                
-                if (nekoInfo->levelNeeded <= Player::self->level) {
-                    ++tamedArray[nekoIndex];
-                    control->system.AddComponent<HeartsShape>(x, y, nekoScale); }
-                sf::SoundBuffer* buffer = sc::LoadSound(L"Data/Neko/Nya/" + nekoInfo->name + L".ogg");
-                if (buffer)
-                {
-                    sound.setBuffer(*buffer);
-                    sound.setVolume(gs::maxVolumeGlobal * gs::maxVolumeSound);
-                    sound.play();
-                }
+                sound.setBuffer(*buffer);
+                sound.setVolume(gs::maxVolumeGlobal * gs::maxVolumeSound);
+                sound.play();
             }
         }
     }
     void NekoObject::Resize()
     {
         sprite.setPosition(x * gs::scalex, y * gs::scaley);
-        sprite.setScale(nekoScale * gs::scale, nekoScale * gs::scale);
+        sprite.setScale(nekoScale * relScale * gs::scale, nekoScale * relScale * gs::scale);
     }
-    void NekoObject::Draw(sf::RenderWindow* window) { window->draw(sprite); }
+    void NekoObject::Draw(sf::RenderWindow* window)
+    {
+        if (newneko)
+        {
+            sprite.setColor(sf::Color::Blue);
+            sf::Vector2f prevscale = sprite.getScale();
+            sf::Vector2f prevpos = sprite.getPosition();
+            sprite.setScale(prevscale.x * 1.1, prevscale.y * 1.1);
+            sprite.setPosition(prevpos.x, offsetYYUp ? prevpos.y + sprite.getGlobalBounds().height*0.05 : prevpos.y - sprite.getGlobalBounds().height * 0.05 );
+            window->draw(sprite);
+            sprite.setColor(sf::Color::White);
+            sprite.setScale(prevscale);
+            sprite.setPosition(prevpos);
+        }
+        window->draw(sprite);
+        /*hitbox = sprite.getGlobalBounds();
+        hitbox.left += nekoInfo->offsets.left * sprite.getScale().x * hitboxScale;
+        hitbox.width -= (nekoInfo->offsets.width + nekoInfo->offsets.left) * sprite.getScale().x * hitboxScale;
+        hitbox.top += nekoInfo->offsets.top * sprite.getScale().x * hitboxScale;
+        hitbox.height -= (nekoInfo->offsets.height + nekoInfo->offsets.top) * sprite.getScale().x * hitboxScale;
+        sf::RectangleShape rectBounds;
+        rectBounds.setFillColor(sf::Color::Transparent);
+        rectBounds.setOutlineColor(sf::Color::White);
+        rectBounds.setSize({hitbox.width, hitbox.height});
+        rectBounds.setPosition(hitbox.left, hitbox.top);
+        rectBounds.setOutlineThickness(2*gs::scale);
+        window->draw(rectBounds);*/
+    }
 
     
     
@@ -703,6 +781,7 @@ namespace NekoNinja
         sf::Clock clock;
         
         NekoObject::control = this;
+        NekoObject::gui = &gui;
         line[0] = sf::Vertex(sf::Vector2f(10, 10), sf::Color::Red);
         line[1] = sf::Vertex(sf::Vector2f(150, 150), sf::Color::Red);
         
@@ -725,7 +804,11 @@ namespace NekoNinja
         
         firstNeko = new NekoObject();
         NekoObject::tamedArray = new unsigned int[nl::neko.size()]();
-        if (Player::self->neko && Player::self->activeNekoUnlocked) ability = Player::self->neko->info->ability;
+        if (Player::self->neko && Player::self->activeNekoUnlocked) {
+            ability = Player::self->neko->info->ability;
+            if (ability) { ability->sender = this;
+                abilityIsCooldownBased = (ability->cooldownTime != 0); }
+        }
         
         //topScore and topStrike reading
         
@@ -736,32 +819,62 @@ namespace NekoNinja
     void Controller::ApplyGameSettings() { for (int i = 0; i < difficulty; ++i) ApplyDifficulty(++currentDifficulty); }
     void Controller::Update(const sf::Time& elapsedTime)
     {
+        if (!gs::isPause) gs::requestWindowRefresh = true;
         if (!gs::isPause && !gs::ignoreEvent)
         {
             if (ability)
             {
                 abilityIsUp = ability->isActive;
-                if (abilityIsUp) { ability->OnUpdate(elapsedTime); if (ability->isActive) abilityElapsedCooldown = ability->cooldownTime; }
-                else
+                if (abilityIsUp) ability->OnUpdate(elapsedTime);
+                else if (abilityOnCooldown)
                 {
-                    if (abilityElapsedCooldown > 0) abilityElapsedCooldown -= elapsedTime.asSeconds();
-                    else { abilityElapsedCooldown = 0; }
+                    if (abilityIsCooldownBased)
+                    {
+                        if (abilityElapsedCooldown > 0) abilityElapsedCooldown -= elapsedTime.asSeconds();
+                        else { abilityElapsedCooldown = 0; abilityOnCooldown = false; }
+                        abilityCooldownGUI = floor(abilityElapsedCooldown) + 1;
+                    }
+                    else
+                    {
+                        if (abilityNekoCounter == std::numeric_limits<unsigned long>::infinity()) {
+                            abilityCooldownGUI = ability->nekoCounter;
+                            abilityNekoCounter = nekoCounter + abilityCooldownGUI; }
+                        if (abilityNekoCounter <= nekoCounter) {
+                            abilityNekoCounter = std::numeric_limits<unsigned long>::infinity(); abilityOnCooldown = false; }
+                    }
+                    if (!abilityOnCooldown) abilityCooldownGUI = 0;
                 }
             }
             
             system.Update(elapsedTime);
             if (spawnNekos)
             {
+                if (event && eventIsUp) event->OnUpdate(elapsedTime);
                 harderElapsedTime += elapsedTime.asSeconds() * nns::getHarderTimeMultiplier;
                 if (harderElapsedTime > getHarderTime)
                 {
+                    if (eventIsUp) { if (event) { event->OnEnd(); delete event; event = nullptr; }
+                        eventIsUp = false; getHarderTime = nns::difficultyLevelUpTime; }
                     float possibility = (rand() % 1000)/1000.f;
-                    if (possibility >= eventPossibility)
+                    if (possibility <= eventPossibility)
                     {
                         cout << "Event placeholder..." << endl;
+                        eventIsUp = true; spawnNekos = false; ++eventsInRow;
+                        if (eventsInRow >= 3) { ApplyDifficulty(++currentDifficulty); eventsInRow = 0; }
                         
-                        ApplyDifficulty(++currentDifficulty);
-                        harderElapsedTime = 0.f;
+                        if (event) { event->OnEnd(); delete event; }
+                        do {
+                            int eventChoosed = rand() % 2;
+                            switch (eventChoosed)
+                            {
+                                case 0: event = new edc::GravityChanged(); break;
+                                case 1: event = new edc::GravityShuffle(); break;
+                                default: break;
+                            }
+                        } while (event->name == previousEvent);
+                        
+                        getHarderTime = event->duration; previousEvent = event->name;
+                        if (!event->requireAlert) { harderElapsedTime = 0; SendMessage({"EventStart"}); }
                     }
                     else
                     {
@@ -781,15 +894,13 @@ namespace NekoNinja
                         attackType = rand() % 3;
                         switch (attackType)
                         {
-                            case 0:
-                                SpawnNeko();
+                            case 0: SpawnNeko();
                                 attackCount = 3 + rand() % 3;
                                 attackingElapsedTime = 0.f;
                                 attackIsDone = false;
                                 break;
                                 
-                            default:
-                                attackCount = 1 + rand() % 5;
+                            default: attackCount = 1 + rand() % 5;
                                 for (int i = 0; i < attackCount; ++i) SpawnNeko();
                                 attackIsDone = true;
                                 break;
@@ -797,7 +908,6 @@ namespace NekoNinja
                     }
                 }
                 else
-                {
                     switch (attackType)
                     {
                         case 0:
@@ -811,30 +921,35 @@ namespace NekoNinja
                             break;
                         default: attackIsDone = true; break;
                     }
-                }
-                
-                if (comboCounter != 0)
+            }
+            else if (!isGameOver && eventIsUp && nekos.empty() && harderElapsedTime != 0)
+            {
+                harderElapsedTime = 0;
+                if (nns::showEventDescription)
+                    gui.system.PrioritizeComponent<EventAlert>(10000, this, event);
+                else gui.system.PrioritizeComponent<EventAlert>(10000, this, L"!", 0.25f);
+            }
+            
+            if ((spawnNekos || eventIsUp) && comboCounter != 0)
+            {
+                elapsedCombo += elapsedTime.asSeconds() * nns::getHarderTimeMultiplier;
+                if (elapsedCombo > comboThreshold)
                 {
-                    elapsedCombo += elapsedTime.asSeconds() * nns::getHarderTimeMultiplier;
-                    if (elapsedCombo > comboThreshold)
+                    if (comboCounter > 2)
                     {
-                        if (comboCounter > 2)
+                        gui.system.PrioritizeComponent<ComboText>(1, comboCounter, lastNekoPosition.x, lastNekoPosition.y);
+                        score += comboCounter * 10 * nns::scoreMultiplier;
+                        if (lifeScore <= score)
                         {
-                            gui.system.PrioritizeComponent<ComboText>(1, comboCounter, lastNekoPosition.x, lastNekoPosition.y);
-                            score += comboCounter * 10 * nns::scoreMultiplier;
-                            if (lifeScore <= score)
-                            {
-                                lifeScore += 1000;
-                                if (lifes != maxlifes) ++lifes;
-                            }
+                            lifeScore += 1000;
+                            if (lifes != maxlifes) ++lifes;
                         }
-                        comboCounter = 0;
                     }
+                    comboCounter = 0;
                 }
             }
             
             for (auto it = nekos.begin(); it != nekos.end(); ++it)
-            {
                 if ((*it)->offline) {
                     if (!isGameOver && !(*it)->tamed && (*it)->nekoInfo->name != L"Poop") {
                         if (strike > maxStrike) maxStrike = strike;
@@ -843,25 +958,19 @@ namespace NekoNinja
                     it = nekos.erase(it); /*score += 100;*/
                 }
                 else (*it)->Update(elapsedTime);
-            }
             
-            if (cursor.size() > 60)
+            if (cursorEnabled)
             {
-                auto it = cursor.begin(); std::advance(it, cursor.size() - 60);
-                cursor.erase(cursor.begin(), it);
-            }
-            
-            if (cursor.size() > 0)
-            {
-                elapsedCursor += elapsedTime.asSeconds();
-                while (elapsedCursor > 0.04f)
-                {
-                    if (cursor.size() > 0)
-                    {
-                        elapsedCursor -= 0.04f;
-                        cursor.erase(cursor.begin());
-                    }
-                    else elapsedCursor = 0.f;
+                if (cursor.size() > 200) {
+                    auto it = cursor.begin(); std::advance(it, cursor.size() - 200);
+                    cursor.erase(cursor.begin(), it); }
+                if (cursor.size() > 0) {
+                    elapsedCursor += elapsedTime.asSeconds();
+                    while (elapsedCursor > 0.04f)
+                        if (cursor.size() > 0) {
+                            elapsedCursor -= 0.04f;
+                            cursor.erase(cursor.begin());
+                        } else elapsedCursor = 0.f;
                 }
             }
         }
@@ -881,24 +990,26 @@ namespace NekoNinja
         background.Draw(window);
         system.Draw(window);
         for (auto& n : nekos) n->Draw(window);
-        for (auto it = cursor.begin(); it != cursor.end(); ++it)
-        {
-            if ((*it).x != -1)
+        if (cursorEnabled)
+            for (auto it = cursor.begin(); it != cursor.end(); ++it)
             {
-                auto it1 = it; std::advance(it1, 1);
-                if (it1 != cursor.end())
+                if ((*it).x != -1)
                 {
-                    if ((*it1).x != -1)
+                    auto it1 = it; std::advance(it1, 1);
+                    if (it1 != cursor.end())
                     {
-                        line[0].position.x = (*it).x;
-                        line[0].position.y = (*it).y;
-                        line[1].position.x = (*it1).x;
-                        line[1].position.y = (*it1).y;
-                        window->draw(line, 2, sf::Lines);
+                        if ((*it1).x != -1)
+                        {
+                            line[0].position.x = (*it).x;
+                            line[0].position.y = (*it).y;
+                            line[1].position.x = (*it1).x;
+                            line[1].position.y = (*it1).y;
+                            window->draw(line, 2, sf::Lines);
+                        }
                     }
                 }
             }
-        }
+        if (event && eventIsUp) event->OnDraw(window);
         if (ability && abilityIsUp) ability->OnDraw(window);
         gui.Draw(window);
     }
@@ -913,10 +1024,11 @@ namespace NekoNinja
             ApplyDifficulty(++currentDifficulty);
             cout << "Difficulty is now: " << currentDifficulty << endl;
         }
+        else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Key::D) { nns::timeMultiplier = 0; nns::velocityMultiplier = 0; nns::getHarderTimeMultiplier = 0; }
         else if (!gs::isPause && !gs::ignoreEvent && !isGameOver)
         {
             bool abilityTurnOn{ false };
-            if (ability && !abilityIsUp && abilityElapsedCooldown == 0)
+            if (ability && !abilityIsUp && !abilityOnCooldown)
             {
                 abilityTurnOn = (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Button::Right);
                 if (!abilityTurnOn && event.type == sf::Event::TouchBegan)
@@ -925,84 +1037,42 @@ namespace NekoNinja
                     else if (event.touch.finger == 1) { if (countdownLastTouchedMoment && lastTouchedMoment > 0) abilityTurnOn = true; }
                 }
             }
-            if (abilityTurnOn) ability->OnAction();
+            if (abilityTurnOn) ActivateAbility();
+            else if (event.type == sf::Event::MouseButtonPressed || (event.type == sf::Event::TouchBegan && event.touch.finger == 0))
+            {
+                sf::Vector2i dot;
+                if (event.type == sf::Event::MouseButtonPressed) dot = {event.mouseButton.x, event.mouseButton.y};
+                else dot = {event.touch.x, event.touch.y};
+                
+                if (cursorEnabled) cursor.push_back({ -1, -1 });
+                startPoint.x = dot.x; startPoint.y = dot.y;
+                swipeConfirmed = true;
+            }
             else if (event.type == sf::Event::MouseButtonReleased || (event.type == sf::Event::TouchEnded && event.touch.finger == 0))
                 swipeConfirmed = false;
-            else if (event.type == sf::Event::MouseMoved || event.type == sf::Event::TouchMoved)
+            else if (((event.type == sf::Event::MouseMoved && sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) || (event.type == sf::Event::TouchMoved && sf::Touch::isDown(0) && event.touch.finger == 0)) && swipeConfirmed)
             {
-                if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) || (sf::Touch::isDown(0) && event.touch.finger == 0))
+                sf::Vector2i dot;
+                if (event.type == sf::Event::MouseMoved) dot = {event.mouseMove.x, event.mouseMove.y};
+                else dot = {event.touch.x, event.touch.y};
+                
+                if (pow(startPoint.x - dot.x, 2) + pow(startPoint.y - dot.y, 2) >= 25*gs::scale)
                 {
-                    sf::Vector2i dot;
-                    if (event.type == sf::Event::MouseMoved) dot = {event.mouseMove.x, event.mouseMove.y};
-                    else dot = {event.touch.x, event.touch.y};
+                    int x1, x2; if (dot.x > startPoint.x) { x1 = startPoint.x; x2 = dot.x; } else { x1 = dot.x; x2 = startPoint.x; }
+                    int y1, y2; if (dot.y > startPoint.y) { y1 = startPoint.y; y2 = dot.y; } else { y1 = dot.y; y2 = startPoint.y; }
                     
-                    endPoint.x = dot.x;
-                    endPoint.y = dot.y;
-                    
-                    if (!swipeConfirmed)
+                    int m_new = 2 * (y2 - y1);
+                    int slope_error_new = m_new - (x2 - x1);
+                    for (int x = x1, y = y1; x <= x2; ++x)
                     {
-                        cursor.push_back({ -1, -1 });
-                        startPoint.x = dot.x;
-                        startPoint.y = dot.y;
-                        
-                        swipeConfirmed = true;
+                        slope_error_new += m_new;
+                        if (slope_error_new >= 0) { ++y;
+                            slope_error_new  -= 2 * (x2 - x1); }
+                        if (cursorEnabled) cursor.push_back({x, y});
+                        for (auto& n : nekos) n->CheckInterception({x, y});
                     }
-                    
-                    if (pow(startPoint.x - endPoint.x, 2) + pow(startPoint.y - endPoint.y, 2) >= 36*gs::scale)
-                    {
-                        if (abs(startPoint.x - endPoint.x) > abs(startPoint.y - endPoint.y))
-                        {
-                            sf::Vector2<int> point{ startPoint.x, startPoint.y };
-                            int steps = 0;
-                            if (startPoint.x - endPoint.x != 0) steps = (startPoint.y - endPoint.y) / (abs(startPoint.x - endPoint.x)/8.f);
-                            if (startPoint.x < endPoint.x)
-                            {
-                                while (point.x < endPoint.x)
-                                {
-                                    cursor.push_back(point);
-                                    for (auto& n : nekos) if (!n->tamed) { n->CheckInterception(point); }
-                                    point.x += 8; point.y -= steps;
-                                }
-                            }
-                            else
-                            {
-                                while (point.x > endPoint.x)
-                                {
-                                    cursor.push_back(point);
-                                    for (auto& n : nekos) if (!n->tamed) { n->CheckInterception(point); }
-                                    point.x -= 8; point.y -= steps;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            sf::Vector2<int> point{ startPoint.x, startPoint.y };
-                            int steps = 0;
-                            if (startPoint.y - endPoint.y != 0) steps = (startPoint.x - endPoint.x) / (abs(startPoint.y - endPoint.y)/8.f);
-                            if (startPoint.y < endPoint.y)
-                            {
-                                while (point.y < endPoint.y)
-                                {
-                                    cursor.push_back(point);
-                                    for (auto& n : nekos) if (!n->tamed) { n->CheckInterception(point); }
-                                    point.y += 8; point.x -= steps;
-                                }
-                            }
-                            else
-                            {
-                                while (point.y > endPoint.y)
-                                {
-                                    cursor.push_back(point);
-                                    for (auto& n : nekos) if (!n->tamed) { n->CheckInterception(point); }
-                                    point.y -= 8; point.x -= steps;
-                                }
-                            }
-                        }
-                    }
-                    
-                    startPoint.x = endPoint.x;
-                    startPoint.y = endPoint.y;
-                } else swipeConfirmed = false;
+                }
+                startPoint.x = dot.x; startPoint.y = dot.y;
             }
         }
         if (!gs::ignoreEvent) gui.PollEvent(event);
@@ -1011,22 +1081,26 @@ namespace NekoNinja
     {
         if (strike > maxStrike) maxStrike = strike;
         isGameOver = true;
+        if (eventIsUp && !spawnNekos) { eventIsUp = false; if (event) { event->OnEnd(); delete event; event = nullptr; } }
         spawnNekos = false;
         gs::isPause = false;
         
         Player::self->AddExperience(score*0.1);
         Player::self->SaveData();
-        Player::self->lootboxes += Player::self->level - gui.prevLevel;
+        unsigned int lootboxes = Player::self->level - gui.prevLevel;
+        if (lootboxes > 0) { Inventory::Add("Lootbox", lootboxes); Player::self->SaveItems(); }
+        if (gui.prevLevel < 35 && Player::self->level >= 35) { ++Player::self->passiveNekosUnlocked; entity->AddComponent<Popup>(L"Вы достигли 35-го уровня!", L"Теперь Вы можете добавить в отряд на прогулку третью кошкодевочку с пассивной способностью!"); }
+        if (gui.prevLevel < 25 && Player::self->level >= 25) { ++Player::self->passiveNekosUnlocked; entity->AddComponent<Popup>(L"Вы достигли 25-го уровня!", L"Теперь Вы можете добавить в отряд на прогулку вторую кошкодевочку с пассивной способностью!"); }
+        if (gui.prevLevel < 16 && Player::self->level >= 16) { ++Player::self->passiveNekosUnlocked; entity->AddComponent<Popup>(L"Вы достигли 16-го уровня!", L"Теперь Вы можете добавить в отряд на прогулку ещё одну кошкодевочку с пассивной способностью!"); }
         if (gui.prevLevel < 6 && Player::self->level >= 6) {
             if (Player::self->neko) ability = Player::self->neko->info->ability;
             Player::self->activeNekoUnlocked = true; entity->AddComponent<Popup>(L"Вы достигли 6-го уровня!", L"Теперь Вы можете использовать активную способность кошкодевочки."); }
-        if (gui.prevLevel < 20 && Player::self->level >= 20) { ++Player::self->passiveNekosUnlocked; entity->AddComponent<Popup>(L"Вы достигли 20-го уровня!", L"Теперь Вы можете добавить в отряд на прогулку ещё одну кошкодевочку с пассивной способностью!"); }
-        if (gui.prevLevel < 35 && Player::self->level >= 35) { ++Player::self->passiveNekosUnlocked; entity->AddComponent<Popup>(L"Вы достигли 35-го уровня!", L"Теперь Вы можете добавить в отряд на прогулку вторую кошкодевочку с пассивной способностью!"); }
         
         gui.GameOver();
-        for (unsigned int i = 0; i < nl::neko.size(); ++i)
-            if (NekoObject::tamedArray[i]) nl::neko[i]->tamed = true;
+        /*for (unsigned int i = 0; i < nl::neko.size(); ++i)
+            if (NekoObject::tamedArray[i]) nl::neko[i]->tamed = true;*/
         Player::self->SaveNekos();
+        if (gui.newNekoAvailable) { NekoDatabaseCollection_SortNeko(); roomLibrary::sortlist(); }
         
         if (ability && abilityIsUp) { abilityIsUp = false; ability->OnEnd(); abilityElapsedCooldown = 0.f; }
         
@@ -1053,12 +1127,18 @@ namespace NekoNinja
     void Controller::ResetGame()
     {
         gs::isPause = false;
-        lifes = maxlifes;
         spawnNekos = true;
         isGameOver = false;
         score = 0;
         comboCounter = 0;
-        lifeScore = 1000;
+        nekoCounter = 0;
+        eventIsUp = false; if (event) { event->OnEnd(); delete event; event = nullptr; }
+        if (ability)
+        {
+            if (abilityIsUp) { ability->OnEnd(); abilityIsUp = false; }
+            if (!abilityIsCooldownBased) abilityNekoCounter = std::numeric_limits<unsigned long>::infinity();
+            else abilityElapsedCooldown = 0;
+        }
         
         /////////////// HELPER NEKO DEPENDENT
         /// lifeScore
@@ -1069,6 +1149,7 @@ namespace NekoNinja
         /// getHarderTime
         /////////////// HELPER NEKO DEPENDENT
         
+        for (auto& n : Player::self->passiveNeko) if (n->info->ability) n->info->ability->OnEnd();
         elapsedSeconds = 0.f; harderElapsedTime = 0.f;
         currentDifficulty = difficulty;
         nextAttackTime = 1.f;
@@ -1080,22 +1161,29 @@ namespace NekoNinja
         
         
         for (unsigned int i = 0; i < nl::neko.size(); ++i) NekoObject::tamedArray[i] = 0;
-        gui.newNekoList.clear();
+        gui.newNekoList.clear(); gui.newEntityList.clear();
         for (auto& n : nekos) delete n;
         nekos.clear();
         system.clear();
         
         ApplyGameSettings();
+        
         for (auto& n : Player::self->passiveNeko) if (n->info->ability) n->info->ability->OnAction();
+        maxlifes = nns::maxLifes; lifes = maxlifes;
+        lifeScore = nns::lifeScoreDelta;
     }
     void Controller::DefaultGamemodeSettings()
     {
         nns::scoreMultiplier = 1.f;
         nns::velocityMultiplier = 1.f;
+        nns::maxLifes = 3;
+        nns::lifeScoreDelta = 2000;
     }
     void Controller::ReturnToMenu()
     {
+        for (auto& n : Player::self->passiveNeko) if (n->info->ability) n->info->ability->OnEnd();
         if (ability && abilityIsUp) ability->OnEnd();
+        if (event) { event->OnEnd(); delete event; }
         gs::isPause = false;
         entity->PopComponent(this);
         entity->system->Resize(gs::width, gs::height);
@@ -1148,6 +1236,33 @@ namespace NekoNinja
                 nns::timeMultiplier *= 1.11;
                 nns::velocityMultiplier *= 1.05;
                 break;
+        }
+    }
+    void Controller::UpdateCooldownCounter()
+    {
+        if (ability && abilityOnCooldown && !abilityIsCooldownBased)
+        {
+            abilityCooldownGUI = abilityNekoCounter - nekoCounter;
+            if (abilityCooldownGUI < 0) abilityCooldownGUI = 0;
+        }
+    }
+    void Controller::ActivateAbility()
+    {
+        if (abilityIsCooldownBased) abilityElapsedCooldown = ability->cooldownTime;
+        abilityOnCooldown = true; ability->OnAction();
+    }
+    void Controller::SendMessage(MessageHolder message)
+    {
+        if (isGameOver) return;
+        if (message.info == "EventStart")
+        {
+            spawnNekos = true; if (event) event->OnAction();
+            elapsedSeconds = nextAttackTime;
+        }
+        else if (message.info == "adc::ScratchClaw")
+        {
+            for (auto& n : nekos) if (n->nekoInfo->name != L"Poop" && !n->tamed) n->Tame();
+            gui.system.PrioritizeComponent<ScratchScratch>(11000);
         }
     }
 }

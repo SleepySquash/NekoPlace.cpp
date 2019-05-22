@@ -12,7 +12,7 @@ namespace NekoNinja
 {
     NekoBase::~NekoBase() { delete ability; }
     NekoBase::NekoBase() { }
-    NekoBase::NekoBase(const std::wstring& name, const float& chance, int difficultyAvailable, float xySpd, unsigned int levelNeeded, int l, int t, int w, int h, bool tamed, const sf::Color& ocolor) : name(name), chance(chance), difficultyAvailable(difficultyAvailable), xySpd(xySpd), levelNeeded(levelNeeded), offsets(l, t, w, h), tamed(tamed), color(ocolor)
+    NekoBase::NekoBase(const std::wstring& name, const float& chance, int difficultyAvailable, float xySpd, unsigned int levelNeeded, sf::IntRect rect, float chibiScale, float novelScale, float personScale, bool tamed, const sf::Color& ocolor) : name(name), chance(chance), possibility(chance), difficultyAvailable(difficultyAvailable), xySpd(xySpd), levelNeeded(levelNeeded), chibiScale(chibiScale), novelScale(novelScale), personScale(personScale), offsets(rect), tamed(tamed), color(ocolor)
     {
         if (ocolor == sf::Color::Transparent)
         {

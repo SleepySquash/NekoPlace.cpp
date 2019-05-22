@@ -17,7 +17,8 @@ using std::list;
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 
-#include "StaticMethods.hpp"
+#include "Settings.hpp"
+#include "MessageHolder.hpp"
 
 namespace ns
 {
@@ -25,19 +26,10 @@ namespace ns
     struct Entity;
     struct EntitySystem;
     
-    struct MessageHolder
-    {
-        std::string info;
-        std::wstring path;
-        
-        MessageHolder();
-        MessageHolder(const std::string& info, const std::wstring& path = L"") : info(info), path(path) { }
-    };
-    
     struct Component
     {
         Entity* entity{ nullptr };
-        bool offline{ false };
+        bool offline{ false }, deleteme{ true }, sleep{ false };
         int priority{ 0 };
         
         virtual ~Component();
@@ -53,7 +45,7 @@ namespace ns
         Entity* GetEntity();
     };
     
-    struct Entity
+    struct Entity : MessageSender
     {
         EntitySystem* system{ nullptr };
         bool offline{ false };
@@ -70,12 +62,13 @@ namespace ns
         void RecieveMessage(MessageHolder& message);
         void Destroy();
         void SetEntitySystem(EntitySystem* system);
+        void SortAbove(Component* component);
         template<typename T, typename ...Args> T* AddComponent(Args... args)
         {
             T* component = new T(args...);
             components.push_back(component);
             
-            component->SetEntity(this);
+            component->entity = this;
             component->Init();
             component->Resize(gs::width, gs::height);
             
@@ -96,7 +89,7 @@ namespace ns
             if (!done)
                 components.push_back(component);
             
-            component->SetEntity(this);
+            component->entity = this;
             component->Init();
             component->Resize(gs::width, gs::height);
             
@@ -104,7 +97,7 @@ namespace ns
         }
     };
     
-    struct EntitySystem
+    struct EntitySystem : MessageSender
     {
         list<Entity*> entities;
         

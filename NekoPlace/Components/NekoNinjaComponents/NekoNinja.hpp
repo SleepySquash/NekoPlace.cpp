@@ -21,14 +21,18 @@
 #include "../../Essentials/ResourcePath.hpp"
 #include "../../Engine/EntitySystem.hpp"
 #include "../../Engine/NovelSystem.hpp"
-#include "../../Engine/StaticMethods.hpp"
+#include "../../Engine/Settings.hpp"
+#include "../../Engine/Collectors.hpp"
 #include "../../Engine/GUIInterface.hpp"
 
 #include "Player.hpp"
 #include "NekoLibrary.hpp"
-#include "GameplayEffects.hpp"
 #include "NekoNinjaSettings.hpp"
-#include "Popup.hpp"
+#include "EventDatabaseCollection.hpp"
+
+#include "GameplayEffects.hpp"
+#include "Interfaces/Popup.hpp"
+#include "EventAlert.hpp"
 
 using std::cin;
 using std::cout;
@@ -100,8 +104,9 @@ namespace NekoNinja
         float heartsXX{ 0 };
         
         bool scoresAlreadyColored{ false };
-        bool newNekoAvailable{ false };
-        list<NekoBase*> newNekoList;
+        bool newNekoAvailable{ false }; bool newNekoReadNovels{ false };
+        vector<NekoBase*> newNekoList; vector<NekoBase*>::iterator newNekoIterator;
+        vector<NekoEntity*> newEntityList;
         sf::RectangleShape newNekoShape, newNekoLine;
         sf::Sprite newNekoSprite;
         
@@ -121,18 +126,17 @@ namespace NekoNinja
     
     struct NekoObject
     {
-        static float gravity;
-        static float yStartVelocity;
-        static int yStartRandomVelocity, xStartRandomVelocity;
-        
         static Controller* control;
+        static GUIOverlay* gui;
         static unsigned int* tamedArray;
         
-        float xVelocity{ 0.f }, yVelocity{ 0.f };
+        float xVelocity{ 0.f }, yVelocity{ 0.f }, gravity{ 0.f };
         float x{ 0 }, y{ 0 };
-        float nekoScale{ 1.f };
-        bool tamed{ false }, offline{ false };
+        float nekoScale{ 1.f }, relScale{ 1.f }, hitboxScale{ 1.f };
+        bool tamed{ false }, offline{ false }, newneko{ false }, offsetYYUp{ false };
         unsigned int nekoIndex{ 0 };
+        float spriteHeight{ 0 };
+        sf::FloatRect hitbox;
         
         int halfTheWidth{ 0 };
         sf::Sprite sprite;
@@ -142,7 +146,8 @@ namespace NekoNinja
         void Init();
         void Destroy();
         void Update(const sf::Time& elapsedTime);
-        void CheckInterception(sf::Vector2<int>& point);
+        void CheckInterception(const sf::Vector2<int>& point);
+        void Tame();
         void Resize();
         void Draw(sf::RenderWindow* window);
     };
@@ -154,7 +159,7 @@ namespace NekoNinja
         
         ControllerSettings(const int& difficulty = 0, const std::wstring& backgroundImage = L"Data/Images/park.jpg") : difficulty(difficulty), backgroundImage(backgroundImage) { }
     };
-    struct Controller : Component
+    struct Controller : Component, MessageSender
     {
         ///////////////
         ///
@@ -186,19 +191,21 @@ namespace NekoNinja
         NekoObject* firstNeko{ nullptr };
         
         int currentDifficulty{ 0 }, difficulty{ 0 };
-        float harderElapsedTime{ 0.f }, getHarderTime{ 36.f };
+        float harderElapsedTime{ 0.f }, getHarderTime{ nns::difficultyLevelUpTime };
         std::wstring backgroundImage{ L"Data/Images/park.jpg" };
-        float criticalHitPossibility{ 0.01f }, eventPossibility{ 0.35f };
+        float criticalHitPossibility{ 0.01f }, eventPossibility{ 0.5f };
         float nekoScale{ 1.f };//, timeMultiplier{ 1.f };
         
-        bool eventIsUp{ false };
+        bool eventIsUp{ false }; EventBase* event{ nullptr };
+        std::string previousEvent{ "" }; int eventsInRow{ 0 };
         
         float attackingElapsedTime{ 0.f }, attackingAreaTime{ 0.5f };
         bool attackIsDone{ true };
         int attackType{ 0 }, attackCount{ 0 };
         
         bool spawnNekos{ true }, isGameOver{ false }, needsInit{ true };
-        AbilityBase* ability{ nullptr }; bool abilityIsUp{ false };
+        AbilityBase* ability{ nullptr }; bool abilityIsUp{ false }, abilityOnCooldown{ false }, abilityIsCooldownBased{ false };
+        unsigned long abilityNekoCounter{ std::numeric_limits<unsigned long>::infinity() }; int abilityCooldownGUI{ 0 };
         float abilityElapsedCooldown{ 0.f }, lastTouchedMoment{ 0.f };
         bool countdownLastTouchedMoment{ false };
         
@@ -207,11 +214,12 @@ namespace NekoNinja
         sf::Vector2f lastNekoPosition;
         
         float elapsedSeconds{ 0.9f }, nextAttackTime{ 2.f }, baseAttackTime{ 1.2f }, randomAttackTime{ 1.2f };
-        unsigned int score{ 0 }, lifes{ 3 }, maxlifes{ 3 }, strike{ 0 }, maxStrike{ 0 };
-        unsigned int lifeScore{ 1000 };
+        unsigned int score{ 0 }, maxlifes{ nns::maxLifes }, lifes{ maxlifes }, strike{ 0 }, maxStrike{ 0 };
+        unsigned int lifeScore{ nns::lifeScoreDelta };
+        unsigned long nekoCounter{ 0 };
         
         sf::Vector2i startPoint{ 0, 0 }, endPoint{ 0, 0 };
-        list<sf::Vector2i> cursor;
+        list<sf::Vector2i> cursor; bool cursorEnabled{ false };
         bool swipeConfirmed{ false };
         float elapsedCursor{ 0.f };
         sf::Vertex line[2];
@@ -230,6 +238,9 @@ namespace NekoNinja
         void ReturnToMenu();
         void SpawnNeko();
         void ApplyDifficulty(const int& diff);
+        void UpdateCooldownCounter();
+        void ActivateAbility();
+        void SendMessage(MessageHolder message) override;
     };
 }
 

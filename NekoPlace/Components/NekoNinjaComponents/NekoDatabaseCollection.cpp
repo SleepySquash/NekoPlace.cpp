@@ -15,64 +15,33 @@ namespace NekoNinja
         auto* novel = entity->AddComponent<VNLightComponents::Novel>();
         novel->lines.push_back(L"blackend");
         novel->lines.push_back(L"show " + name + L" center message:no");
-        novel->lines.push_back(name + L" \"Йей, приветь!!~ :3\"");
+        novel->lines.push_back(name + L" \"Йей, приветь!!~ :3\" disappear:0.2");
+        novel->lines.push_back(L"wait 0.2");
+    }
+    void NekoBase::NovelIntroduction(Entity* entity)
+    {
+        auto* novel = entity->AddComponent<VNLightComponents::Novel>();
+        novel->lines.push_back(L"blackend fade:0.2");
+        novel->lines.push_back(L"show " + name + L" center message:no");
+        novel->lines.push_back(name + L" \"Приятно познакомиться, я " + display + L", надеюсь, мы подружимся :3\"");
         novel->lines.push_back(L"disappear fade:0.2");
     }
     
-    namespace adc
-    {
-        void TheWorld::OnAction()
-        {
-            shape.setRadius(0);
-            shape.setFillColor(sf::Color(0,50,255, 70));
-            shape.setPointCount(16);
-            
-            elapsedSeconds = 2.f;
-            lastTimeMultiplier = nns::timeMultiplier;
-            lastVelocityMultiplier = nns::velocityMultiplier;
-            lastGetHarderTimeMultiplier = nns::getHarderTimeMultiplier;
-            nns::timeMultiplier = 0.f; nns::velocityMultiplier = 0.f; nns::getHarderTimeMultiplier = 0.f;
-            isActive = true;
-        }
-        void TheWorld::OnEnd()
-        {
-            nns::timeMultiplier = lastTimeMultiplier;
-            nns::velocityMultiplier = lastVelocityMultiplier;
-            nns::getHarderTimeMultiplier = lastGetHarderTimeMultiplier;
-            elapsedSeconds = 0.f; isActive = false;
-        }
-        void TheWorld::OnUpdate(const sf::Time& elapsedTime)
-        {
-            radius = ((gs::width > gs::height) ? gs::width : gs::height)/2 * (1 - elapsedSeconds/2.f);
-            shape.setRadius(radius); shape.setOrigin(shape.getGlobalBounds().width/2, shape.getGlobalBounds().height/2);
-            shape.setPosition(gs::width/2, gs::height/2);
-            
-            if (elapsedSeconds <= 0) { nns::timeMultiplier = lastTimeMultiplier;
-                nns::velocityMultiplier = lastVelocityMultiplier;
-                nns::getHarderTimeMultiplier = lastGetHarderTimeMultiplier;
-                elapsedSeconds = 0.f; isActive = false; }
-            else elapsedSeconds -= elapsedTime.asSeconds();
-        }
-        void TheWorld::OnDraw(sf::RenderWindow* window) { window->draw(shape); }
-        
-        
-        
-        void AkakosBlessings::OnAction() { nns::scoreMultiplier = 1.03f; }
-    }
     
     
     
-    
-    
-    
-    
-    
-    
+    void NekoDatabaseCollection_SortNeko() { std::sort(nl::neko.begin(), nl::neko.end(), [](const NekoBase* a, const NekoBase* b) { return a->possibility > b->possibility; }); }
     void NekoDatabaseCollection_LoadNeko()
     {
+        nl::neko.push_back(new ndc::Poop());
+        ndc::Poop::ptr = nl::neko.back();
+        
+        nl::neko.push_back(new ndc::MezumiNakayano());
+        nl::neko.push_back(new ndc::AmariMami());
+        nl::neko.push_back(new ndc::KashikoHola());
+        
         nl::neko.push_back(new ndc::Azuki());
         nl::neko.push_back(new ndc::Shigure());
-        nl::neko.push_back(new ndc::Poop());
         nl::neko.push_back(new ndc::Cinnamon());
         nl::neko.push_back(new ndc::Maple());
         nl::neko.push_back(new ndc::Coconut());
@@ -94,12 +63,24 @@ namespace NekoNinja
         nl::neko.push_back(new ndc::Flandre());
         nl::neko.push_back(new ndc::ElizabethBathory());
         
-        std::sort(nl::neko.begin(), nl::neko.end(), [](const NekoBase* a, const NekoBase* b) { return a->chance > b->chance; });
+        NekoDatabaseCollection_SortNeko();
     }
     
     
     namespace ndc
     {
+        NekoBase* Poop::ptr = nullptr;
+        void Azuki::NovelTalkTo(Entity* entity)
+        {
+            auto* novel = entity->AddComponent<VNLightComponents::Novel>();
+            novel->lines.push_back(L"blackend");
+            novel->lines.push_back(L"show " + name + L" center message:no");
+            novel->lines.push_back(name + L" \"Хозяииин~ :3\"");
+            novel->lines.push_back(name + L" \"Как тебе мой цап-царап? Надеюсь, я оправдываю твои ожидания! >3<\"");
+            novel->lines.push_back(name + L" \"Прости, что после цап-царапа мне приходится чуть-чуть отдохнуть т.т\"");
+            novel->lines.push_back(name + L" \"Если буду тренироваться, то смогу помогать тебе чаще, дя!!! :3\"");
+            novel->lines.push_back(L"disappear fade:0.2");
+        }
         void Cinnamon::NovelTalkTo(Entity* entity)
         {
             auto* novel = entity->AddComponent<VNLightComponents::Novel>();

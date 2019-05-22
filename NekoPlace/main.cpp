@@ -36,12 +36,18 @@
 
 #include "Essentials/ResourcePath.hpp"
 #include "Essentials/Base.hpp"
-#include "Engine/StaticMethods.hpp"
+#include "Engine/Settings.hpp"
 #include "Engine/EntitySystem.hpp"
 
 #include "Components/EssentialComponents.hpp"
+
+//#include "Components/NekoUIComponents/Apartment.hpp"
+
 #include "Components/NekoNinjaComponents/NekoNinja.hpp"
 #include "Components/NekoNinjaComponents/MainMenu.hpp"
+#include "Components/NekoNinjaComponents/Interfaces/InventoryUI.hpp"
+#include "Components/NekoNinjaComponents/Interfaces/NekoInterfaceUI.hpp"
+#include "Components/NekoNinjaComponents/Interfaces/NekoGridUI.hpp"
 
 using std::cout;
 using std::cin;
@@ -62,6 +68,9 @@ void CalculateScaleRatios(unsigned int width, unsigned int height)
     
     gs::scale = factorX > factorY ? factorX : factorY;
     gs::scScale = gs::scale;
+    
+    if (ratioFactorX < 1.3 && ratioFactorY < 1.3) gs::scale *= 0.9;
+    if (ratioFactorX < 1.3 && ratioFactorY < 1.3) gs::scScale *= 0.9;
     if (ratioFactorY > 1)
     {
         float m = gs::scale;
@@ -111,6 +120,7 @@ void CalculateScaleRatios(unsigned int width, unsigned int height)
             gs::scale = gs::scale - m*(1.9 - 1)*0.175 - m*(3 - 1.9)*0.27 - m*(4.24 - 3)*0.15 - m*(7 - 4.24)*0.05 - m*(ratioFactorX - 7)*0.02;
         else
             gs::scale = gs::scale - m*(1.9 - 1)*0.175 - m*(3 - 1.9)*0.27 - m*(4.24 - 3)*0.15 - m*(7 - 4.24)*0.05 - m*(11 - 7)*0.02;
+        gs::scScale = gs::scale;
     }
     if (gs::scale < 0.18) gs::scale = 0.18;
 }
@@ -241,12 +251,27 @@ int main()
     ///----------------------------------------------------------
     /// \brief Entity to hold Neko Ninja components
     ///
-    /// Entity holds components like Neko Ninja controller, its background etc.
+    /// Entity holds components like Neko Ninja controller, its interfaces etc.
     ///
     ///----------------------------------------------------------
     Entity* Chocola = system.AddEntity();
     {
         Chocola->AddComponent<NekoNinja::MainMenu>();
+        Chocola->AddComponent<NekoNinja::InventoryUI>();
+        Chocola->AddComponent<NekoNinja::NekoInterfaceUI>();
+        Chocola->AddComponent<NekoNinja::NekoGridUI>();
+        Chocola->AddComponent<NekoNinja::LootboxUI>();
+    }
+    
+    ///----------------------------------------------------------
+    /// \brief Entity to hold NekoUI components
+    ///
+    /// Entity holds components like NekoUI room, its interfaces etc.
+    ///
+    ///----------------------------------------------------------
+    Entity* Vanilla = system.AddEntity();
+    {
+        //Vanilla->AddComponent<NekoUI::Apartment>();
     }
     
     ///----------------------------------------------------------
@@ -258,8 +283,9 @@ int main()
     ///----------------------------------------------------------
     Entity* Shimakaze = system.AddEntity();
     {
-        Shimakaze->AddComponent<EssentialComponents::DebugComponent>("Update 0 build 7");
+        Shimakaze->AddComponent<EssentialComponents::DebugComponent>("Update 0 build 8");
     }
+    gs::lastMousePos = { sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y };
     
     bool active{ true };
     sf::Clock clock;
@@ -297,20 +323,30 @@ int main()
                     break;
 #endif
                     
-                case sf::Event::MouseWheelScrolled:
-                case sf::Event::TouchEnded:
-                case sf::Event::TouchMoved:
-                case sf::Event::TouchBegan:
-                case sf::Event::MouseButtonReleased:
-                case sf::Event::MouseMoved:
-                case sf::Event::MouseButtonPressed:
+                case sf::Event::MouseWheelScrolled: system.PollEvent(event); break;
+                case sf::Event::TouchEnded: case sf::Event::TouchBegan:
+                    gs::lastMousePos = { event.touch.x, event.touch.y };
                     system.PollEvent(event);
+                    break;
+                case sf::Event::MouseButtonReleased: case sf::Event::MouseButtonPressed:
+                    gs::lastMousePos = { event.mouseButton.x, event.mouseButton.y };
+                    system.PollEvent(event);
+                    break;
+                case sf::Event::TouchMoved:
+                    system.PollEvent(event);
+                    gs::lastMousePos = { event.touch.x, event.touch.y };
+                    break;
+                case sf::Event::MouseMoved:
+                    system.PollEvent(event);
+                    gs::lastMousePos = { event.mouseMove.x, event.mouseMove.y };
                     break;
                     
                 case sf::Event::KeyPressed:
                     switch (event.key.code)
                     {
-                        case sf::Keyboard::Key::K: system.PollEvent(event); break;
+                        case sf::Keyboard::Key::D:
+                        case sf::Keyboard::Key::K:
+                            system.PollEvent(event); break;
                         default: break;
                     }
                     break;
@@ -325,6 +361,7 @@ int main()
                     
                 default: break;
             }
+            gs::requestWindowRefresh = true;
         }
         
 #if defined(SFML_SYSTEM_IOS) || defined(SFML_SYSTEM_ANDROID)
@@ -332,16 +369,26 @@ int main()
         {
             system.Update(clock.restart());
             
-            window.clear();
-            system.Draw(&window);
-            window.display(); //TODO: Might crash there if app is not running
+            if (gs::requestWindowRefresh)
+            {
+                window.clear();
+                system.Draw(&window);
+                window.display(); //TODO: Might crash here if app is not running
+                
+                gs::requestWindowRefresh = false;
+            } else sf::sleep(sf::milliseconds(10));
         } else sf::sleep(sf::milliseconds(100));
 #else
         system.Update(clock.restart());
         
-        window.clear();
-        system.Draw(&window);
-        window.display();
+        if (gs::requestWindowRefresh)
+        {
+            window.clear();
+            system.Draw(&window);
+            window.display();
+            
+            gs::requestWindowRefresh = false;
+        } else sf::sleep(sf::milliseconds(10));
 #endif
     }
     
